@@ -17,22 +17,21 @@ def simulate_match(game: Game, agent1: Agent, agent2: Agent, num_games: int) -> 
         agent2.start()
 
         s = game.reset()
+        agent1_moves_first = (g % 2 == 0)
 
-        # Alternate who agent1 is (+1 or -1)
-        agent1_player = +1 if (g % 2 == 0) else -1
-        agent2_player = -agent1_player
+        # Track whose perspective the canonical state represents: +1 for agent1, -1 for agent2.
+        player_to_move = +1 if agent1_moves_first else -1
 
         while True:
             done, v = game.terminal_value(s)
             if done:
                 # v is from player-to-move; convert to agent1 POV
-                v1 = float(v) if game.to_play(s) == agent1_player else -float(v)
+                v1 = float(v) if player_to_move == +1 else -float(v)
                 values_agent1.append(v1)
 
-                # Update aggregate stats
                 if v1 > 0:
                     wins1 += 1
-                    if agent1_player == +1:
+                    if agent1_moves_first:
                         wins1_as_first += 1
                     else:
                         wins1_as_second += 1
@@ -44,26 +43,22 @@ def simulate_match(game: Game, agent1: Agent, agent2: Agent, num_games: int) -> 
                     draws += 1
                     outcome_str = "Draw"
 
-                # Per-game print
-                first = "Agent1" if agent1_player == +1 else "Agent2"
-                second = "Agent2" if agent1_player == +1 else "Agent1"
-                winner = (
-                    "Agent1" if v1 > 0 else
-                    "Agent2" if v1 < 0 else
-                    "Draw"
-                )
+                first = "Agent1" if agent1_moves_first else "Agent2"
+                second = "Agent2" if agent1_moves_first else "Agent1"
+                winner = "Agent1" if v1 > 0 else "Agent2" if v1 < 0 else "Draw"
                 print(f"[game {g:04d}] first={first} second={second} winner={winner} ({outcome_str})")
 
                 break
 
-            mover = agent1 if game.to_play(s) == agent1_player else agent2
+            mover = agent1 if player_to_move == +1 else agent2
             a = int(mover.act(s))
 
             legal = game.legal_actions(s)
             if not legal[a]:
-                raise ValueError(f"Illegal action {a} for player {game.to_play(s)}.")
+                raise ValueError(f"Illegal action {a} for player {player_to_move}.")
 
             s = game.next_state(s, a)
+            player_to_move *= -1
 
     n = max(1, int(num_games))
     mean_v = float(np.mean(values_agent1)) if values_agent1 else 0.0
