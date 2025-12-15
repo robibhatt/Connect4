@@ -8,6 +8,7 @@ import torch
 from pathlib import Path
 from evaluator import TorchEvaluator
 from games.tiktaktoe_vs_human import play_ttt_human_vs_agent_click
+import yaml
 
 
 def load_model_from_dir(
@@ -61,10 +62,12 @@ def main():
 
     game = TicTacToe()
 
+    model_dir = Path('trained_models/20251215_121528_TicTacToeNet')
+
     model = load_model_from_dir(
         model_cls=TicTacToeNet,
         model_kwargs=None,
-        model_dir='trained_models/20251215_121528_TicTacToeNet',
+        model_dir=model_dir,
         device='mps'
     )
 
@@ -72,13 +75,14 @@ def main():
         
     random_agent = RandomAgent(game=game)
 
-    mcts_cfg = MCTSConfig(
-        num_sims=50,
-        c_puct=1.25,
-        dirichlet_alpha=0.6,   # higher alpha for small action space
-        dirichlet_eps=0.20,    # slightly gentler than 0.25
-        illegal_action_penalty=1e9,
-    )
+    cfg_path = model_dir / "train.yaml"
+    if not cfg_path.exists():
+        raise FileNotFoundError(f"No train.yaml found in {model_dir}")
+
+    with cfg_path.open("r") as f:
+        saved_cfg = yaml.safe_load(f) or {}
+
+    mcts_cfg = MCTSConfig(**saved_cfg.get("mcts", {}))
 
     evaluator = TorchEvaluator(model=model,
                                device=next(model.parameters()).device)
