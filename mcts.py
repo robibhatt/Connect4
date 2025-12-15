@@ -151,11 +151,11 @@ class MCTS:
 
         # Backup: update edge stats along path; flip viewpoint each ply.
         for s_parent, a in reversed(path):
+            v = -v  # <-- flip BEFORE using it at the parent
             parent_node = self._get_node(s_parent)
             parent_node.N[a] += 1
             parent_node.W[a] += v
             parent_node.Q[a] = parent_node.W[a] / parent_node.N[a]
-            v = -v
 
     def _select_action_puct(self, s: State, node: Node) -> int:
         legal = self.game.legal_actions(s)  # bool[action_size]
