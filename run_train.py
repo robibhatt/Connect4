@@ -67,16 +67,6 @@ def main():
     save_dir = save_model_with_timestamp(model)
     shutil.copy2(config_path, save_dir / config_path.name)
 
-    # testing code
-    # random_agent = RandomAgent(game=game)
-    # mcts_agent = MCTSAgent(game= game, mcts=mcts)
-    # simulate_match(
-    #     game=game,
-    #     agent1=random_agent,
-    #     agent2=mcts_agent,
-    #     num_games=100
-    # )
-
 
 if __name__ == '__main__':
     main()
