@@ -1,0 +1,22 @@
+train:
+  iterations: 400
+  games_per_iteration: 8
+  temp_moves: 4
+  tau: 1.0
+  deterministic_after_temp: true
+  add_dirichlet_noise: true
+  batch_size: 64
+  train_steps_per_iteration: 50
+  lr: 0.003
+  weight_decay: 0.0001
+  value_loss_coef: 1.0
+  buffer_capacity: 40000
+  device: mps
+  clear_mcts_each_game: true
+
+mcts:
+  num_sims: 50
+  c_puct: 1.25
+  dirichlet_alpha: 0.6
+  dirichlet_eps: 0.2
+  illegal_action_penalty: 1000000000.0

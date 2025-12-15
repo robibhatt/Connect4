@@ -1,13 +1,18 @@
-from trainer import TrainerArgs, Trainer
-from games.tiktaktoe import TicTacToe
-from models.tiktaktoenet import TicTacToeNet
-from mcts import MCTSConfig, MCTS
-from evaluator import TorchEvaluator
-from agent import RandomAgent, MCTSAgent
-from games.game_play import simulate_match
-import torch
+import shutil
 from datetime import datetime
 from pathlib import Path
+from typing import Tuple
+
+import torch
+import yaml
+
+from agent import RandomAgent, MCTSAgent
+from evaluator import TorchEvaluator
+from games.game_play import simulate_match
+from games.tiktaktoe import TicTacToe
+from mcts import MCTSConfig, MCTS
+from models.tiktaktoenet import TicTacToeNet
+from trainer import TrainerArgs, Trainer
 
 def save_model_with_timestamp(model, root_dir="trained_models"):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -23,38 +28,28 @@ def save_model_with_timestamp(model, root_dir="trained_models"):
     return save_dir
 
 
+def load_config(config_path: Path) -> Tuple[TrainerArgs, MCTSConfig, dict]:
+    with config_path.open("r") as f:
+        config = yaml.safe_load(f) or {}
+
+    train_cfg = config.get("train", {})
+    mcts_cfg = config.get("mcts", {})
+
+    trainer_args = TrainerArgs(**train_cfg)
+    mcts_config = MCTSConfig(**mcts_cfg)
+
+    return trainer_args, mcts_config, config
+
+
 def main():
 
-    args = TrainerArgs(
-        iterations=400,
-        games_per_iteration=8,
-        temp_moves=4,
-        tau=1.0,
-        deterministic_after_temp=True,
-        add_dirichlet_noise=True,
-        batch_size=64,
-        train_steps_per_iteration=50,
-        lr=3e-3,
-        weight_decay=1e-4,
-        value_loss_coef=1.0,
-        buffer_capacity=40_000,
-        device="mps",
-        clear_mcts_each_game=True,
-    )
+    config_path = Path("train.yaml")
+    args, mcts_cfg, _ = load_config(config_path)
 
     game = TicTacToe()
     model = TicTacToeNet()
     evaluator = TorchEvaluator(model=model,
                                device=torch.device(args.device))
-    
-
-    mcts_cfg = MCTSConfig(
-        num_sims=50,
-        c_puct=1.25,
-        dirichlet_alpha=0.6,   # higher alpha for small action space
-        dirichlet_eps=0.20,    # slightly gentler than 0.25
-        illegal_action_penalty=1e9,
-    )
 
     mcts = MCTS(game=game,
                 evaluator=evaluator,
@@ -69,7 +64,8 @@ def main():
 
     trainer.run()
 
-    save_model_with_timestamp(model)
+    save_dir = save_model_with_timestamp(model)
+    shutil.copy2(config_path, save_dir / config_path.name)
 
     # testing code
     # random_agent = RandomAgent(game=game)
