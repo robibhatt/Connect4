@@ -62,7 +62,7 @@ def main():
 
     game = TicTacToe()
 
-    model_dir = Path('trained_models/220251215_144209_TicTacToeNet')
+    model_dir = Path('trained_models/20251215_144209_TicTacToeNet')
 
     model = load_model_from_dir(
         model_cls=TicTacToeNet,
@@ -98,6 +98,7 @@ def main():
         agent2=mcts_agent,
         num_games=100
     )
+
 
     play_ttt_human_vs_agent_click(
         game=game,
