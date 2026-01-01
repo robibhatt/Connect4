@@ -1,12 +1,10 @@
-from agent import RandomAgent
+from agents.agent import RandomAgent, MCTSAgent
 from games.tiktaktoe import TicTacToe
 from models.tiktaktoenet import TicTacToeNet
 from games.game_play import simulate_match
-from agent import MCTSAgent
-from mcts import MCTS, MCTSConfig
+from mcts.alphazero_mcts import MCTS, MCTSConfig
 import torch
 from pathlib import Path
-from evaluator import TorchEvaluator
 from games.tiktaktoe_vs_human import play_ttt_human_vs_agent_click
 import yaml
 
@@ -84,11 +82,9 @@ def main():
 
     mcts_cfg = MCTSConfig(**saved_cfg.get("mcts", {}))
 
-    evaluator = TorchEvaluator(model=model,
-                               device=next(model.parameters()).device)
-    
     mcts = MCTS(game=game,
-                evaluator=evaluator,
+                model=model,
+                device=next(model.parameters()).device,
                 cfg=mcts_cfg)
 
     mcts_agent = MCTSAgent(game= game, mcts=mcts)

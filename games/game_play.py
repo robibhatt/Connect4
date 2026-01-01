@@ -1,5 +1,5 @@
 from games.game import Game
-from agent import Agent
+from agents.agent import Agent
 import numpy as np
 
 

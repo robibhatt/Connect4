@@ -5,9 +5,9 @@ from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 from games.game import Game, State
-from evaluator import Evaluator
 
 
 @dataclass
@@ -42,18 +42,26 @@ class MCTS:
     """
     AlphaZero-style MCTS:
       - selection via PUCT
-      - leaf evaluation via Evaluator (policy priors + value)
+      - leaf evaluation via neural network model (policy priors + value)
       - backup with sign flip each ply
 
     IMPORTANT CONVENTION:
       game.terminal_value(s) returns value from viewpoint of player-to-move at s.
-      evaluator.evaluate(game, s) returns value from viewpoint of player-to-move at s.
+      model(x) returns (logits, value) from viewpoint of player-to-move at s.
       Therefore backup uses v = -v each step.
     """
 
-    def __init__(self, game: Game, evaluator: Evaluator, cfg: Optional[MCTSConfig] = None, rng: Optional[np.random.Generator] = None):
+    def __init__(
+        self,
+        game: Game,
+        model: nn.Module,
+        device: Optional[torch.device] = None,
+        cfg: Optional[MCTSConfig] = None,
+        rng: Optional[np.random.Generator] = None
+    ):
         self.game = game
-        self.evaluator = evaluator
+        self.model = model
+        self.device = device or torch.device('cpu')
         self.cfg = cfg or MCTSConfig()
         self.rng = rng or np.random.default_rng()
 
@@ -180,26 +188,50 @@ class MCTS:
     def _expand(self, s: State, node: Node, add_dirichlet_noise: bool) -> float:
         """
         Expand a leaf node:
-          - query evaluator for priors + value at s
+          - query model for priors + value at s
           - mask+normalize priors to legal actions
           - optionally add Dirichlet noise (root only)
           - store priors in node and mark expanded
           - return value v (from viewpoint of player-to-move at s)
         """
-        priors, v = self.evaluator.evaluate(self.game, s)
+        # Encode state -> torch tensor
+        x_np = self.game.encode(s).astype(np.float32, copy=False)
+        x = torch.from_numpy(x_np).unsqueeze(0).to(self.device)
 
-        p = np.asarray(priors, dtype=np.float32)
+        # Run model
+        was_training = self.model.training
+        self.model.eval()
+        try:
+            with torch.no_grad():
+                logits_b, value_b = self.model(x)
+        finally:
+            self.model.train(was_training)
 
+        # Extract outputs
+        logits = logits_b.squeeze(0)
+        value = value_b.squeeze(0).squeeze(0)
+
+        # Masked softmax over legal actions
         legal = self.game.legal_actions(s)
+        if legal.dtype != np.bool_:
+            legal = legal.astype(bool)
 
-        p = self._mask_and_normalize(p, legal)
+        legal_t = torch.from_numpy(legal).to(logits.device)
+        masked_logits = logits.masked_fill(~legal_t, -1e9)
+        priors_t = torch.softmax(masked_logits, dim=0)
 
+        # Convert to numpy
+        priors = priors_t.cpu().numpy().astype(np.float32)
+        v = float(value.cpu().item())
+
+        # Apply noise if needed
+        p = priors
         if add_dirichlet_noise:
             p = self._with_dirichlet_noise(p, legal)
 
         node.P[:] = p
         node.expanded = True
-        return float(v)
+        return v
 
     # -------------------------
     # Policy extraction

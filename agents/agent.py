@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from games.game import Game, State
-from mcts import MCTS
+from mcts.alphazero_mcts import MCTS
 
 import numpy as np
 
@@ -57,7 +57,7 @@ class RandomAgent(Agent):
 class MCTSAgent(Agent):
     """
     Agent that selects actions using a pre-configured MCTS instance.
-    Assumes the MCTS (and its evaluator) are already trained / ready.
+    Assumes the MCTS (and its model) are already trained / ready.
     """
 
     def __init__(self, game: Game, mcts: MCTS):
