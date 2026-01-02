@@ -9,6 +9,8 @@ import torch.nn.functional as F
 from src.games.core.game import Game, State
 from src.algorithms.alphazero.mcts import MCTS
 from src.algorithms.alphazero.replay_buffer import ReplayBuffer
+from src.agents.checkpointable import CheckpointableAgent
+from src.agents.registry import AgentRegistry
 
 
 @dataclass
@@ -174,3 +176,29 @@ class Trainer:
             "policy_loss": pol_acc * inv,
             "value_loss": val_acc * inv,
         }
+
+    # -------------------------
+    # Agent creation
+    # -------------------------
+
+    def create_agent(self) -> CheckpointableAgent:
+        """
+        Create agent from trained model using registry.
+
+        This is called after training completes to package the
+        trained model into a playable agent.
+
+        Returns:
+            Agent instance ready to be saved or used for play
+
+        Raises:
+            KeyError: If agent class not found in registry
+        """
+        game_class_name = self.game.__class__.__name__
+        agent_class_name = f"{game_class_name}AlphaZeroAgent"
+
+        # Get from registry
+        AgentClass = AgentRegistry.get_agent(agent_class_name)
+
+        # Construct agent
+        return AgentClass(game=self.game, mcts=self.mcts)

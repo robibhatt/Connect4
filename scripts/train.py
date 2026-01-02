@@ -1,8 +1,6 @@
-from datetime import datetime
 from pathlib import Path
 from typing import Tuple
 
-import torch
 import yaml
 
 from src.games.core.registry import GameRegistry
@@ -10,52 +8,8 @@ from src.models.registry import ModelRegistry
 from src.algorithms.alphazero import MCTS, MCTSConfig, Trainer, TrainerArgs
 from src.algorithms.registry import AlgorithmRegistry
 from src.algorithms.alphazero.config import AlphaZeroConfig
-
-
-def save_model_with_metadata(model, game_name: str, config: dict, root_dir="trained_models"):
-    """
-    Save model with timestamp and game name in folder name.
-
-    Args:
-        model: Trained model
-        game_name: Name of the game (e.g., 'tictactoe')
-        config: Full config dict to save alongside model
-        root_dir: Root directory for saved models
-
-    Returns:
-        Path to saved model directory
-    """
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    model_class_name = model.__class__.__name__
-
-    # Include game name in folder for easy identification
-    folder_name = f"{timestamp}_{game_name}_{model_class_name}"
-
-    save_dir = Path(root_dir) / folder_name
-    save_dir.mkdir(parents=True, exist_ok=False)
-
-    # Save model weights
-    model_path = save_dir / "model.pt"
-    torch.save(model.state_dict(), model_path)
-
-    # Save config with game metadata
-    config_with_metadata = {
-        **config,
-        'metadata': {
-            'game': game_name,
-            'model_class': model_class_name,
-            'timestamp': timestamp,
-        }
-    }
-    config_path = save_dir / "train.yaml"
-    with config_path.open('w') as f:
-        yaml.dump(config_with_metadata, f, default_flow_style=False)
-
-    print(f"\nModel saved to: {save_dir}")
-    print(f"  - Game: {game_name}")
-    print(f"  - Model: {model_class_name}")
-
-    return save_dir
+from src.agents.alphazero_agent_config import AlphaZeroAgentConfig
+from src.agents.checkpoint_utils import save_agent_checkpoint
 
 
 def load_config(config_path: Path) -> Tuple[str, AlphaZeroConfig, dict]:
@@ -155,12 +109,35 @@ def main():
     # Run training
     trainer.run()
 
-    # Save with metadata
-    save_dir = save_model_with_metadata(
-        model=model,
-        game_name=game_name,
-        config=full_config
+    # Create agent from trained model
+    agent = trainer.create_agent()
+
+    # Build agent config for saving
+    agent_config = AlphaZeroAgentConfig(
+        model_class=config.model_class,
+        model_kwargs=config.model_kwargs,
+        num_sims=config.num_sims,
+        c_puct=config.c_puct,
+        dirichlet_alpha=config.dirichlet_alpha,
+        dirichlet_eps=config.dirichlet_eps,
+        illegal_action_penalty=config.illegal_action_penalty,
+        device=config.device,
     )
+
+    # Save agent checkpoint
+    agent_class_name = agent.__class__.__name__
+    save_dir = save_agent_checkpoint(
+        agent=agent,
+        agent_class_name=agent_class_name,
+        game_name=game_name,
+        config=agent_config,
+        training_config=full_config,
+        root_dir="saved_agents"
+    )
+
+    print(f"\nAgent saved to: {save_dir}")
+    print(f"  - Game: {game_name}")
+    print(f"  - Agent: {agent_class_name}")
 
 
 if __name__ == '__main__':
