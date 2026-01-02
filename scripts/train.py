@@ -5,18 +5,10 @@ from typing import Tuple
 import torch
 import yaml
 
-from src.games.tictactoe import TicTacToe
-from src.games.connect4 import Connect4
-from src.models.registry import get_model_for_game, ModelRegistry
+from src.games.core.registry import GameRegistry
+from src.models.registry import ModelRegistry
 from src.mcts import MCTS, MCTSConfig
 from src.training import Trainer, TrainerArgs
-
-
-# Game registry
-GAMES = {
-    'tictactoe': TicTacToe,
-    'connect4': Connect4,
-}
 
 
 def save_model_with_metadata(model, game_name: str, config: dict, root_dir="trained_models"):
@@ -65,13 +57,14 @@ def save_model_with_metadata(model, game_name: str, config: dict, root_dir="trai
     return save_dir
 
 
-def load_config(config_path: Path) -> Tuple[str, dict, TrainerArgs, MCTSConfig, dict]:
+def load_config(config_path: Path) -> Tuple[str, str, dict, TrainerArgs, MCTSConfig, dict]:
     """
     Load configuration from YAML file.
 
     Returns:
         game_name: Name of the game to train
-        model_config: Model hyperparameters
+        model_class_name: Full model class name (e.g., 'TicTacToeMLPNet')
+        model_config: Model hyperparameters (excluding 'class')
         trainer_args: Training configuration
         mcts_config: MCTS configuration
         full_config: Complete config dict for saving
@@ -87,7 +80,15 @@ def load_config(config_path: Path) -> Tuple[str, dict, TrainerArgs, MCTSConfig, 
         game_name = game_config  # backward compatibility
 
     # Extract model config
-    model_config = config.get("model", {})
+    model_config = config.get("model", {}).copy()  # Make a copy to avoid modifying original
+
+    # Extract model class name (required)
+    if 'class' not in model_config:
+        raise ValueError(
+            "Model configuration must include 'class' field specifying the model class name. "
+            f"Example: model: {{class: TicTacToeMLPNet, hidden: 64}}"
+        )
+    model_class_name = model_config.pop('class')  # Remove from model_config
 
     # Extract training and MCTS configs
     train_cfg = config.get("train", {})
@@ -96,22 +97,19 @@ def load_config(config_path: Path) -> Tuple[str, dict, TrainerArgs, MCTSConfig, 
     trainer_args = TrainerArgs(**train_cfg)
     mcts_config = MCTSConfig(**mcts_cfg)
 
-    return game_name, model_config, trainer_args, mcts_config, config
+    return game_name, model_class_name, model_config, trainer_args, mcts_config, config
 
 
 def main():
     config_path = Path(__file__).parent / "train.yaml"
-    game_name, model_config, args, mcts_cfg, full_config = load_config(config_path)
+    game_name, model_class_name, model_config, args, mcts_cfg, full_config = load_config(config_path)
 
-    # Instantiate game
-    if game_name not in GAMES:
-        raise ValueError(
-            f"Unknown game '{game_name}'. Available: {list(GAMES.keys())}"
-        )
-    game = GAMES[game_name]()
+    # Instantiate game using GameRegistry
+    GameClass = GameRegistry.get_game(game_name)
+    game = GameClass()
 
-    # Get model class from registry and instantiate
-    ModelClass = get_model_for_game(game)
+    # Get model class from ModelRegistry and instantiate
+    ModelClass = ModelRegistry.get_model(model_class_name)
     model = ModelClass(**model_config)
 
     print(f"\n{'='*60}")

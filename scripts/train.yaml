@@ -4,7 +4,8 @@ game:
 
 # Model configuration
 model:
-  hidden: 64  # Hidden layer size (64 for TicTacToe, 128 for Connect4)
+  class: TicTacToeMLPNet  # Full model class name (e.g., TicTacToeMLPNet, Connect4MLPNet)
+  hidden: 64              # Hidden layer size (64 for TicTacToe, 128 for Connect4)
 
 # Training configuration
 train:
