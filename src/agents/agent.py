@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from src.games.game import Game, State
+from src.games.core.game import Game, State
 
 import numpy as np
 

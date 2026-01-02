@@ -8,8 +8,8 @@ from unittest.mock import Mock, patch
 import numpy as np
 
 # These imports will fail initially - that's expected in TDD
-from src.games.ui.game_ui import GameUI
-from src.games.tiktaktoe import TicTacToe
+from src.games.core.ui.game_ui import GameUI
+from src.games.tictactoe import TicTacToe
 from src.agents.agent import Agent
 
 
@@ -131,7 +131,7 @@ def test_terminal_detection_on_win(ui, game):
     # Player 2 (O): 3, 4
     board = np.array([[1, 1, 1], [0, 0, -1], [0, -1, 0]], dtype=np.int8)
 
-    from src.games.tiktaktoe import TicTacToeState
+    from src.games.tictactoe import TicTacToeState
     ui.state = TicTacToeState(board=board)
     ui.human_to_move = True  # Current player is +1
 
@@ -151,7 +151,7 @@ def test_terminal_detection_on_draw(ui):
     # O X X
     board = np.array([[1, -1, 1], [1, -1, -1], [-1, 1, 1]], dtype=np.int8)
 
-    from src.games.tiktaktoe import TicTacToeState
+    from src.games.tictactoe import TicTacToeState
     ui.state = TicTacToeState(board=board)
 
     ui._check_terminal()

@@ -9,8 +9,8 @@ import numpy as np
 import pygame as pg
 
 # These imports will fail initially - that's expected in TDD
-from src.games.ui.tictactoe_ui import TicTacToeUI
-from src.games.tiktaktoe import TicTacToe
+from src.games.tictactoe.ui.tictactoe_ui import TicTacToeUI
+from src.games.tictactoe import TicTacToe
 from src.agents.agent import Agent
 
 

@@ -13,7 +13,7 @@ from typing import Optional
 import numpy as np
 import pygame as pg
 
-from src.games.game import Game, State
+from src.games.core.game import Game, State
 from src.agents.agent import Agent
 
 

@@ -9,7 +9,7 @@ import numpy as np
 import pygame as pg
 
 # These imports will fail initially - that's expected in TDD
-from src.games.ui.connect4_ui import Connect4UI
+from src.games.connect4.ui.connect4_ui import Connect4UI
 from src.games.connect4 import Connect4
 from src.agents.agent import Agent
 

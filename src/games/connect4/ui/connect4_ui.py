@@ -10,8 +10,8 @@ from typing import Optional
 import numpy as np
 import pygame as pg
 
-from src.games.ui.game_ui import GameUI, UIConfig
-from src.games.game import Game
+from src.games.core.ui.game_ui import GameUI, UIConfig
+from src.games.core.game import Game
 from src.agents.agent import Agent
 
 

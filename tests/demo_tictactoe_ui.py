@@ -9,10 +9,10 @@ Usage:
     python tests/demo_tictactoe_ui.py
 """
 
-from src.games.tiktaktoe import TicTacToe
+from src.games.tictactoe import TicTacToe
 from src.agents.agent import RandomAgent
-from src.games.ui.tictactoe_ui import TicTacToeUI
-from src.games.ui.game_ui import UIConfig
+from src.games.tictactoe.ui import TicTacToeUI
+from src.games.core.ui import UIConfig
 import numpy as np
 
 

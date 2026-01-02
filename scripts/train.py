@@ -6,7 +6,7 @@ from typing import Tuple
 import torch
 import yaml
 
-from src.games.tiktaktoe import TicTacToe
+from src.games.tictactoe import TicTacToe
 from src.mcts.alphazero_mcts import MCTSConfig, MCTS
 from src.models.tiktaktoenet import TicTacToeNet
 from src.training.trainer import TrainerArgs, Trainer

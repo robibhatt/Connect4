@@ -1,4 +1,4 @@
-from src.games.game import Game
+from src.games.core.game import Game
 from src.agents.agent import Agent
 import numpy as np
 
