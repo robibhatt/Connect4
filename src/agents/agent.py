@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from src.games.game import Game, State
-from src.mcts.alphazero_mcts import MCTS
 
 import numpy as np
 
@@ -52,27 +51,3 @@ class RandomAgent(Agent):
             raise RuntimeError("No legal actions available at this state.")
 
         return int(self.rng.choice(legal_idxs))
-    
-
-class MCTSAgent(Agent):
-    """
-    Agent that selects actions using a pre-configured MCTS instance.
-    Assumes the MCTS (and its model) are already trained / ready.
-    """
-
-    def __init__(self, game: Game, mcts: MCTS):
-        super().__init__(game)
-        self.mcts = mcts
-
-    def start(self) -> None:
-        """
-        Called at the beginning of a new game.
-        Clears the MCTS search tree.
-        """
-        self.mcts.clear()
-
-    def act(self, s: State) -> int:
-        """
-        Choose an action by running MCTS from state s.
-        """
-        return self.mcts.play_move(s)

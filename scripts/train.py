@@ -6,8 +6,6 @@ from typing import Tuple
 import torch
 import yaml
 
-from src.agents.agent import RandomAgent, MCTSAgent
-from src.games.game_play import simulate_match
 from src.games.tiktaktoe import TicTacToe
 from src.mcts.alphazero_mcts import MCTSConfig, MCTS
 from src.models.tiktaktoenet import TicTacToeNet

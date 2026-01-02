@@ -6,6 +6,7 @@ Tests game-specific behavior like column-based input and 6x7 geometry.
 import pytest
 from unittest.mock import Mock
 import numpy as np
+import pygame as pg
 
 # These imports will fail initially - that's expected in TDD
 from src.games.ui.connect4_ui import Connect4UI
@@ -30,13 +31,16 @@ def mock_agent():
 
 @pytest.fixture
 def ui(game, mock_agent):
-    """Connect4UI instance without pygame initialized"""
+    """Connect4UI instance for testing"""
+    # Initialize pygame (headless, no display needed)
+    pg.init()
+
     ui_instance = Connect4UI(game, mock_agent, pause_seconds=0.1)
 
-    # Mock pygame components to avoid actual rendering
-    ui_instance.screen = Mock()
-    ui_instance.font = Mock()
-    ui_instance.big_font = Mock()
+    # Use real pygame surfaces for rendering tests
+    ui_instance.screen = pg.Surface((600, 600))
+    ui_instance.font = pg.font.SysFont(None, 26)
+    ui_instance.big_font = pg.font.SysFont(None, 34)
 
     # Compute geometry (needed for input mapping tests)
     ui_instance._compute_board_geometry()
