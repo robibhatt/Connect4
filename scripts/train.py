@@ -40,7 +40,7 @@ def load_config(config_path: Path) -> Tuple[TrainerArgs, MCTSConfig, dict]:
 
 def main():
 
-    config_path = Path("train.yaml")
+    config_path = Path(__file__).parent / "train.yaml"
     args, mcts_cfg, _ = load_config(config_path)
 
     game = TicTacToe()
