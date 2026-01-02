@@ -8,7 +8,7 @@ import torch.nn as nn
 import yaml
 
 from src.games.core.game import Game, State
-from src.mcts import MCTS, MCTSConfig
+from src.algorithms.alphazero import MCTS, MCTSConfig
 
 
 class AlphaZeroMCTSAgent:

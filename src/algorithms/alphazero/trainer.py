@@ -7,8 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from src.games.core.game import Game, State
-from src.mcts import MCTS
-from .replay_buffer import ReplayBuffer
+from src.algorithms.alphazero.mcts import MCTS
+from src.algorithms.alphazero.replay_buffer import ReplayBuffer
 
 
 @dataclass

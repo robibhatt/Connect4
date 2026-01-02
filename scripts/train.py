@@ -7,8 +7,7 @@ import yaml
 
 from src.games.core.registry import GameRegistry
 from src.models.registry import ModelRegistry
-from src.mcts import MCTS, MCTSConfig
-from src.training import Trainer, TrainerArgs
+from src.algorithms.alphazero import MCTS, MCTSConfig, Trainer, TrainerArgs
 
 
 def save_model_with_metadata(model, game_name: str, config: dict, root_dir="trained_models"):
