@@ -13,8 +13,8 @@ from typing import Optional
 import numpy as np
 import pygame as pg
 
-from games.game import Game, State
-from agents.agent import Agent
+from src.games.game import Game, State
+from src.agents.agent import Agent
 
 
 @dataclass

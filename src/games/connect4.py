@@ -6,7 +6,7 @@ from typing import List, Tuple
 import numpy as np
 from jaxtyping import Bool, Float, Int
 
-from games.game import Game, State
+from src.games.game import Game, State
 
 
 @dataclass(frozen=True)

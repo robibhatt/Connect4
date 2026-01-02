@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from games.game import Game, State
-from mcts.alphazero_mcts import MCTS
+from src.games.game import Game, State
+from src.mcts.alphazero_mcts import MCTS
 
 import numpy as np
 

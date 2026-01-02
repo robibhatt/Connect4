@@ -1,9 +1,9 @@
-from agents.agent import RandomAgent, MCTSAgent
-from games.tiktaktoe import TicTacToe
-from models.tiktaktoenet import TicTacToeNet
-from games.game_play import simulate_match
-from mcts.alphazero_mcts import MCTS, MCTSConfig
-from games.ui import TicTacToeUI, Connect4UI
+from src.agents.agent import RandomAgent, MCTSAgent
+from src.games.tiktaktoe import TicTacToe
+from src.models.tiktaktoenet import TicTacToeNet
+from src.games.game_play import simulate_match
+from src.mcts.alphazero_mcts import MCTS, MCTSConfig
+from src.games.ui import TicTacToeUI, Connect4UI
 import torch
 from pathlib import Path
 import yaml

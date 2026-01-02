@@ -10,9 +10,9 @@ from typing import Optional
 import numpy as np
 import pygame as pg
 
-from games.ui.game_ui import GameUI, UIConfig
-from games.game import Game
-from agents.agent import Agent
+from src.games.ui.game_ui import GameUI, UIConfig
+from src.games.game import Game
+from src.agents.agent import Agent
 
 
 class TicTacToeUI(GameUI):

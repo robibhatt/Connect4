@@ -6,9 +6,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from games.game import Game, State
-from mcts.alphazero_mcts import MCTS
-from training.replay_buffer import ReplayBuffer
+from src.games.game import Game, State
+from src.mcts.alphazero_mcts import MCTS
+from src.training.replay_buffer import ReplayBuffer
 
 
 @dataclass

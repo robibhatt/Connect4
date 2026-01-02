@@ -6,12 +6,12 @@ from typing import Tuple
 import torch
 import yaml
 
-from agents.agent import RandomAgent, MCTSAgent
-from games.game_play import simulate_match
-from games.tiktaktoe import TicTacToe
-from mcts.alphazero_mcts import MCTSConfig, MCTS
-from models.tiktaktoenet import TicTacToeNet
-from training.trainer import TrainerArgs, Trainer
+from src.agents.agent import RandomAgent, MCTSAgent
+from src.games.game_play import simulate_match
+from src.games.tiktaktoe import TicTacToe
+from src.mcts.alphazero_mcts import MCTSConfig, MCTS
+from src.models.tiktaktoenet import TicTacToeNet
+from src.training.trainer import TrainerArgs, Trainer
 
 def save_model_with_timestamp(model, root_dir="trained_models"):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

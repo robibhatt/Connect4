@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from games.game import Game, State
+from src.games.game import Game, State
 
 
 @dataclass
