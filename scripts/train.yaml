@@ -1,3 +1,12 @@
+# Game configuration
+game:
+  name: tictactoe  # 'tictactoe' or 'connect4'
+
+# Model configuration
+model:
+  hidden: 64  # Hidden layer size (64 for TicTacToe, 128 for Connect4)
+
+# Training configuration
 train:
   iterations: 400
   games_per_iteration: 8
@@ -14,6 +23,7 @@ train:
   device: mps
   clear_mcts_each_game: true
 
+# MCTS configuration
 mcts:
   num_sims: 50
   c_puct: 1.25
