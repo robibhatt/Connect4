@@ -3,9 +3,9 @@ from games.tiktaktoe import TicTacToe
 from models.tiktaktoenet import TicTacToeNet
 from games.game_play import simulate_match
 from mcts.alphazero_mcts import MCTS, MCTSConfig
+from games.ui import TicTacToeUI, Connect4UI
 import torch
 from pathlib import Path
-from games.tiktaktoe_vs_human import play_ttt_human_vs_agent_click
 import yaml
 
 
@@ -87,7 +87,9 @@ def main():
                 device=next(model.parameters()).device,
                 cfg=mcts_cfg)
 
-    mcts_agent = MCTSAgent(game= game, mcts=mcts)
+    mcts_agent = MCTSAgent(game=game, mcts=mcts)
+
+    # Simulate matches: Random vs MCTS
     simulate_match(
         game=game,
         agent1=random_agent,
@@ -95,12 +97,9 @@ def main():
         num_games=100
     )
 
-
-    play_ttt_human_vs_agent_click(
-        game=game,
-        agent=mcts_agent,
-        pause_seconds=0.4
-    )
+    # Play interactively with new UI
+    ui = TicTacToeUI(game=game, agent=mcts_agent, pause_seconds=0.4)
+    ui.run()
 
 
 
