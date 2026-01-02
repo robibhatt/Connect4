@@ -1,0 +1,51 @@
+# AlphaZero Training Configuration
+# =================================
+# This is a sample configuration for training with the AlphaZero algorithm.
+
+# Game to train on
+game: tictactoe  # Options: 'tictactoe', 'connect4'
+
+# Algorithm configuration
+algorithm:
+  name: alphazero
+
+  # Hardware device
+  device: mps  # Options: 'cpu', 'cuda', 'mps' (Apple Silicon)
+
+  # Model architecture
+  model:
+    class: TicTacToeMLPNet  # Full model class name
+    hidden: 64              # Model-specific kwargs
+
+  # Training loop
+  iterations: 400                    # Number of training iterations
+  games_per_iteration: 8             # Self-play games per iteration
+  batch_size: 64                     # Batch size for training
+  train_steps_per_iteration: 50      # Gradient steps per iteration
+  lr: 0.003                          # Learning rate
+  weight_decay: 0.0001               # L2 regularization
+  value_loss_coef: 1.0               # Weight for value loss
+
+  # Self-play behavior
+  temp_moves: 4                      # Moves with temperature exploration
+  tau: 1.0                           # Temperature for exploration
+  deterministic_after_temp: true     # Use argmax after temp_moves
+  add_dirichlet_noise: true          # Add root noise for exploration
+
+  # MCTS search
+  num_sims: 50                       # MCTS simulations per move
+  c_puct: 1.25                       # PUCT exploration constant
+  dirichlet_alpha: 0.6               # Dirichlet noise concentration
+  dirichlet_eps: 0.2                 # Dirichlet noise weight
+  illegal_action_penalty: 1e9        # Penalty for illegal actions
+
+  # Experience buffer
+  buffer_capacity: 40000             # Max samples in replay buffer
+  clear_mcts_each_game: true         # Clear search tree each game
+
+# Notes:
+# ------
+# - For Connect4, use: model: {class: Connect4MLPNet, hidden: 128}
+# - Adjust num_sims and games_per_iteration based on your hardware
+# - Higher iterations = longer training = better performance
+# - MPS device requires Apple Silicon Mac with PyTorch MPS support

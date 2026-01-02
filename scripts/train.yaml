@@ -1,14 +1,17 @@
 # Game configuration
-game:
-  name: tictactoe  # 'tictactoe' or 'connect4'
+game: tictactoe
 
-# Model configuration
-model:
-  class: TicTacToeMLPNet  # Full model class name (e.g., TicTacToeMLPNet, Connect4MLPNet)
-  hidden: 64              # Hidden layer size (64 for TicTacToe, 128 for Connect4)
+# Algorithm configuration
+algorithm:
+  name: alphazero
+  device: mps
 
-# Training configuration
-train:
+  # Model configuration
+  model:
+    class: TicTacToeMLPNet
+    hidden: 64
+
+  # Training parameters
   iterations: 400
   games_per_iteration: 8
   temp_moves: 4
@@ -21,11 +24,9 @@ train:
   weight_decay: 0.0001
   value_loss_coef: 1.0
   buffer_capacity: 40000
-  device: mps
   clear_mcts_each_game: true
 
-# MCTS configuration
-mcts:
+  # MCTS parameters
   num_sims: 50
   c_puct: 1.25
   dirichlet_alpha: 0.6
