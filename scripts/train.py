@@ -7,9 +7,9 @@ import torch
 import yaml
 
 from src.games.tictactoe import TicTacToe
-from src.mcts.alphazero_mcts import MCTSConfig, MCTS
-from src.models.tiktaktoenet import TicTacToeNet
-from src.training.trainer import TrainerArgs, Trainer
+from src.mcts import MCTS, MCTSConfig
+from src.models import TicTacToeNet
+from src.training import Trainer, TrainerArgs
 
 def save_model_with_timestamp(model, root_dir="trained_models"):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

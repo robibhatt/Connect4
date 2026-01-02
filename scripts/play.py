@@ -1,9 +1,8 @@
 from src.agents import RandomAgent, AlphaZeroMCTSAgent
 from src.games.tictactoe import TicTacToe
-from src.models.tiktaktoenet import TicTacToeNet
+from src.models import TicTacToeNet
 from src.games.core.game_play import simulate_match
 from src.games.tictactoe.ui import TicTacToeUI
-from src.games.connect4.ui import Connect4UI
 from pathlib import Path
 
 
