@@ -41,6 +41,12 @@ class AgentRegistry:
     _registry: Dict[str, Type[Agent]] = {}  # agent_class_name -> agent_class
     _game_to_agents: Dict[str, Set[str]] = {}  # game_name -> set of agent_class_names
 
+    # Legacy class name mapping for backward compatibility
+    _LEGACY_CLASS_MAPPING: Dict[str, str] = {
+        'TicTacToeAlphaZeroAgent': 'AlphaZeroAgent',
+        'Connect4AlphaZeroAgent': 'AlphaZeroAgent',
+    }
+
     @classmethod
     def register(cls, agent_class: Type[Agent]) -> None:
         """
@@ -155,6 +161,30 @@ class AgentRegistry:
     @classmethod
     def _ensure_registered_by_class_name(cls, agent_class_name: str) -> None:
         """Ensure an agent is registered (lazy registration by agent class name)."""
+        # Check if this is a legacy class name
+        if agent_class_name in cls._LEGACY_CLASS_MAPPING:
+            modern_name = cls._LEGACY_CLASS_MAPPING[agent_class_name]
+            # Import and register both the modern class and the legacy wrapper
+            if modern_name == 'AlphaZeroAgent':
+                try:
+                    from src.agents.alphazero_agent import AlphaZeroAgent
+                    # Register the base class first if not already registered
+                    if 'AlphaZeroAgent' not in cls._registry:
+                        # AlphaZeroAgent needs manual registration with game name
+                        cls._registry['AlphaZeroAgent'] = AlphaZeroAgent
+
+                    # Now import and register the legacy wrapper
+                    if agent_class_name == 'TicTacToeAlphaZeroAgent':
+                        from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
+                        cls.register(TicTacToeAlphaZeroAgent)
+                    elif agent_class_name == 'Connect4AlphaZeroAgent':
+                        from src.agents.connect4_alphazero_agent import Connect4AlphaZeroAgent
+                        cls.register(Connect4AlphaZeroAgent)
+                except (ImportError, ValueError):
+                    pass
+            return
+
+        # Legacy handling for non-mapped names (backward compatibility)
         if agent_class_name == 'TicTacToeAlphaZeroAgent':
             try:
                 from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
@@ -165,6 +195,13 @@ class AgentRegistry:
             try:
                 from src.agents.connect4_alphazero_agent import Connect4AlphaZeroAgent
                 cls.register(Connect4AlphaZeroAgent)
+            except (ImportError, ValueError):
+                pass
+        elif agent_class_name == 'AlphaZeroAgent':
+            try:
+                from src.agents.alphazero_agent import AlphaZeroAgent
+                if 'AlphaZeroAgent' not in cls._registry:
+                    cls._registry['AlphaZeroAgent'] = AlphaZeroAgent
             except (ImportError, ValueError):
                 pass
 
@@ -182,6 +219,15 @@ class AgentRegistry:
 # Auto-register known agents
 def _auto_register():
     """Automatically register all known agents."""
+    # Register the generic AlphaZeroAgent
+    try:
+        from src.agents.alphazero_agent import AlphaZeroAgent
+        if 'AlphaZeroAgent' not in AgentRegistry._registry:
+            AgentRegistry._registry['AlphaZeroAgent'] = AlphaZeroAgent
+    except ImportError:
+        pass
+
+    # Register deprecated wrappers for backward compatibility
     try:
         from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
         AgentRegistry.register(TicTacToeAlphaZeroAgent)

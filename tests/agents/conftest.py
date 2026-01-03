@@ -8,6 +8,7 @@ from unittest.mock import Mock
 from pathlib import Path
 
 from src.agents.agent import RandomAgent
+from src.agents.alphazero_agent import AlphaZeroAgent
 from src.agents.alphazero_agent_config import AlphaZeroAgentConfig
 from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
 from src.agents.connect4_alphazero_agent import Connect4AlphaZeroAgent
@@ -117,6 +118,18 @@ def sample_tictactoe_agent(tictactoe_game, tictactoe_mcts_real):
 def sample_connect4_agent(connect4_game, connect4_mcts_real):
     """Connect4AlphaZeroAgent with real model for checkpoint tests."""
     return Connect4AlphaZeroAgent(game=connect4_game, mcts=connect4_mcts_real)
+
+
+@pytest.fixture
+def sample_alphazero_agent_tictactoe(tictactoe_game, tictactoe_mcts_real):
+    """Generic AlphaZeroAgent for TicTacToe with real model for tests."""
+    return AlphaZeroAgent(game=tictactoe_game, mcts=tictactoe_mcts_real)
+
+
+@pytest.fixture
+def sample_alphazero_agent_connect4(connect4_game, connect4_mcts_real):
+    """Generic AlphaZeroAgent for Connect4 with real model for tests."""
+    return AlphaZeroAgent(game=connect4_game, mcts=connect4_mcts_real)
 
 
 @pytest.fixture

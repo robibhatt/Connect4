@@ -53,6 +53,10 @@ def save_agent_checkpoint(
     # Delegate to agent's checkpoint method (saves model.pt)
     agent.to_checkpoint(save_dir)
 
+    # Map legacy class names to modern name for new checkpoints
+    if agent_class_name in ['TicTacToeAlphaZeroAgent', 'Connect4AlphaZeroAgent']:
+        agent_class_name = 'AlphaZeroAgent'
+
     # Build agent.yaml
     agent_yaml = {
         'agent_class': agent_class_name,

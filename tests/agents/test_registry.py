@@ -278,3 +278,37 @@ def test_registry_pattern_with_multi_word_algorithm_names():
     # AlphaZero is camel case algorithm name
     agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
     assert agent_cls is not None
+
+
+# ===== Generic AlphaZeroAgent Tests =====
+
+def test_alphazero_agent_registered():
+    """Generic AlphaZeroAgent should be registered."""
+    agent_cls = AgentRegistry.get_agent('AlphaZeroAgent')
+    assert agent_cls is not None
+    assert agent_cls.__name__ == 'AlphaZeroAgent'
+
+
+def test_legacy_tictactoe_name_resolves():
+    """TicTacToeAlphaZeroAgent should resolve via legacy mapping."""
+    agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
+    assert agent_cls is not None
+    assert agent_cls.__name__ == 'TicTacToeAlphaZeroAgent'
+
+
+def test_legacy_connect4_name_resolves():
+    """Connect4AlphaZeroAgent should resolve via legacy mapping."""
+    agent_cls = AgentRegistry.get_agent('Connect4AlphaZeroAgent')
+    assert agent_cls is not None
+    assert agent_cls.__name__ == 'Connect4AlphaZeroAgent'
+
+
+def test_legacy_classes_are_subclasses():
+    """Legacy agent classes should be subclasses of AlphaZeroAgent."""
+    from src.agents.alphazero_agent import AlphaZeroAgent
+
+    tictactoe_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
+    connect4_cls = AgentRegistry.get_agent('Connect4AlphaZeroAgent')
+
+    assert issubclass(tictactoe_cls, AlphaZeroAgent)
+    assert issubclass(connect4_cls, AlphaZeroAgent)
