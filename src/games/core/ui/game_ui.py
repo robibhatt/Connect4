@@ -15,13 +15,14 @@ import pygame as pg
 
 from src.games.core.game import Game, State
 from src.agents.agent import Agent
+from src.games.core.ui.cli_status import CLIStatusDisplay
 
 
 @dataclass
 class UIConfig:
     """Configuration parameters for game UI"""
-    window_size: int = 600
-    top_bar_height: int = 70
+    window_size: int = 800
+    top_bar_height: int = 10  # Reduced from 70 - minimal margin, no text overlay
     margin: int = 30
     line_width: int = 6
     mark_width: int = 10
@@ -61,6 +62,9 @@ class GameUI(ABC):
         self.pause_seconds = float(pause_seconds)
         self.rng = np.random.default_rng() if rng is None else rng
         self.cfg = cfg or UIConfig()
+
+        # CLI status display
+        self.cli_display = CLIStatusDisplay(mode="human_vs_agent")
 
         # Pygame components (initialized in run())
         self.screen: Optional[pg.Surface] = None
@@ -121,6 +125,7 @@ class GameUI(ABC):
 
         self._compute_board_geometry()
         self.new_game()
+        self._update_cli_status()
 
         running = True
         while running:
@@ -129,6 +134,8 @@ class GameUI(ABC):
             self._update()
             self._render()
 
+        self.cli_display.clear()
+        print()  # Add blank line for clean exit
         pg.quit()
 
     def new_game(self) -> None:
@@ -148,6 +155,8 @@ class GameUI(ABC):
         # Flush stale clicks from the previous game (only if pygame is initialized)
         if pg.get_init():
             pg.event.clear(pg.MOUSEBUTTONDOWN)
+
+        self._update_cli_status()
 
     # ===== Game Loop Components =====
 
@@ -200,18 +209,11 @@ class GameUI(ABC):
                 self._check_terminal()
 
     def _render(self) -> None:
-        """Render frame: background, status text, board, pieces"""
-        assert self.screen is not None and self.big_font is not None and self.font is not None
+        """Render frame: background, board, pieces (no text)"""
+        assert self.screen is not None
 
         # Background
         self.screen.fill(self.cfg.bg_color)
-
-        # Title/status (top bar)
-        title = self.big_font.render(self.msg, True, self.cfg.text_color)
-        self.screen.blit(title, (20, 15))
-
-        hint = self.font.render("Click to move. N = new game. Q/Esc = quit.", True, (70, 70, 70))
-        self.screen.blit(hint, (20, 45))
 
         # Board + pieces (game-specific)
         self._render_board()
@@ -232,6 +234,7 @@ class GameUI(ABC):
         self.human_to_move = False
         self.msg = "Agent move…"
         self.agent_think_until = None
+        self._update_cli_status()
 
     def _apply_agent_move(self) -> None:
         """Execute agent move, switch to human turn"""
@@ -253,6 +256,7 @@ class GameUI(ABC):
 
         self.msg = f"You are {self.human_symbol}. Your move."
         self.agent_think_until = None
+        self._update_cli_status()
 
     # ===== Helper Methods =====
 
@@ -282,3 +286,16 @@ class GameUI(ABC):
             winner_is_human = not self.human_to_move
 
         self.msg = ("YOU WIN 🎉" if winner_is_human else "YOU LOSE 💀") + "   (N = new game)"
+        self._update_cli_status()
+
+    def _update_cli_status(self) -> None:
+        """Update CLI status display with current game state"""
+        game_name = self.game.__class__.__name__
+
+        self.cli_display.update_status(
+            game_name=game_name,
+            human_symbol=self.human_symbol,
+            agent_symbol=self.agent_symbol,
+            status_msg=self.msg,
+            control_hints="Click=move, N=new game, Q/ESC=quit"
+        )

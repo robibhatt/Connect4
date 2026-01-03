@@ -1,0 +1,53 @@
+# Configuration for view_match.py - Watch AI agents play against each other
+#
+# This configuration allows you to watch two AI agents play a game with
+# manual stepping controls. Press SPACE to advance each move.
+#
+# To use:
+#   python scripts/view_match.py
+#
+# Controls:
+#   SPACE - Advance to next move / Start next game
+#   N     - Start new game (keeps cumulative score)
+#   Q/ESC - Quit
+
+# Game to play: 'tictactoe' or 'connect4'
+game: connect4
+
+# First agent configuration
+agent1:
+  type: random  # 'random' or 'alphazero'
+  name: "Random Agent 1"  # Optional: Display name (defaults to type)
+
+  # Required for alphazero agents:
+  # checkpoint_dir: saved_agents/YOUR_CHECKPOINT_DIR
+
+# Second agent configuration
+agent2:
+  type: random  # 'random' or 'alphazero'
+  name: "Random Agent 2"  # Optional: Display name (defaults to type)
+
+  # Required for alphazero agents:
+  # checkpoint_dir: saved_agents/YOUR_CHECKPOINT_DIR
+
+# UI configuration (optional)
+ui:
+  pause_after_move: 0.3  # Brief pause after each move (seconds)
+  window_size: 800       # Window size in pixels
+
+# Example configurations:
+#
+# Random vs Random (TicTacToe):
+#   game: tictactoe
+#   agent1: {type: random, name: "Random A"}
+#   agent2: {type: random, name: "Random B"}
+#
+# AlphaZero vs Random (Connect4):
+#   game: connect4
+#   agent1: {type: alphazero, name: "AlphaZero", checkpoint_dir: saved_agents/connect4_checkpoint}
+#   agent2: {type: random, name: "Random"}
+#
+# AlphaZero vs AlphaZero (head-to-head):
+#   game: tictactoe
+#   agent1: {type: alphazero, name: "Model v1", checkpoint_dir: saved_agents/tictactoe_v1}
+#   agent2: {type: alphazero, name: "Model v2", checkpoint_dir: saved_agents/tictactoe_v2}
