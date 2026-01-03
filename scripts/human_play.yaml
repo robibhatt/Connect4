@@ -1,0 +1,64 @@
+# ============================================================================
+# Human Play Configuration
+# ============================================================================
+# This file configures which game to play and which AI agent to play against.
+# The script automatically loads this file when you run: python -m scripts.human_play
+
+# ----------------------------------------------------------------------------
+# Game Selection
+# ----------------------------------------------------------------------------
+# Specify which game you want to play.
+# Available options:
+#   - tictactoe: Classic 3x3 Tic-Tac-Toe
+#   - connect4: Connect Four (6x7 grid)
+
+game: connect4
+
+# ----------------------------------------------------------------------------
+# Agent Configuration
+# ----------------------------------------------------------------------------
+# Configure which AI agent you want to play against.
+
+agent:
+  # Agent Type
+  # ----------
+  # Options:
+  #   - random: Agent that makes random valid moves
+  #             (Good for testing, no training required)
+  #   - alphazero: Trained AlphaZero agent using neural network
+  #                (Requires a trained checkpoint - see below)
+
+  type: random
+
+  # Checkpoint Directory (Required for AlphaZero agents only)
+  # ----------------------------------------------------------
+  # If agent.type is 'alphazero', you MUST specify the path to a trained
+  # checkpoint directory. This directory should contain:
+  #   - agent.yaml (agent configuration)
+  #   - model.pt (trained model weights)
+  #
+  # To train an AlphaZero agent:
+  #   1. Run: python -m scripts.train
+  #   2. Find your checkpoint in: saved_agents/YYYYMMDD_HHMMSS_ModelName/
+  #   3. Update the checkpoint_dir below with that path
+  #
+  # Example for AlphaZero agent:
+  #   type: alphazero
+  #   checkpoint_dir: saved_agents/20250102_123456_TicTacToeNet
+  #
+  # For reference configs, see: configs/play/
+
+# ----------------------------------------------------------------------------
+# UI Configuration (Optional)
+# ----------------------------------------------------------------------------
+# Control the visual behavior of the game interface.
+
+ui:
+  # Pause duration (in seconds) after the AI makes a move
+  # This gives you time to see the AI's move before your turn
+  # Adjust based on your preference:
+  #   - 0.0: No pause (instant AI moves)
+  #   - 0.4: Default (slight pause)
+  #   - 1.0: Longer pause for easier viewing
+
+  pause_seconds: 0.4

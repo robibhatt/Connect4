@@ -1,0 +1,10 @@
+# Play Connect4 against a Random Agent
+# This configuration is ready to use immediately - no training required!
+
+game: connect4
+
+agent:
+  type: random
+
+ui:
+  pause_seconds: 0.4

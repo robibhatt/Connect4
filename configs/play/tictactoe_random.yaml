@@ -1,0 +1,10 @@
+# Play TicTacToe against a Random Agent
+# This configuration is ready to use immediately - no training required!
+
+game: tictactoe
+
+agent:
+  type: random
+
+ui:
+  pause_seconds: 0.4
