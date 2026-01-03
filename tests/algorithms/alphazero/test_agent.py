@@ -4,7 +4,7 @@ import pytest
 import torch
 from pathlib import Path
 
-from src.agents.alphazero_agent import AlphaZeroAgent
+from src.algorithms.alphazero import AlphaZeroAgent
 from src.agents.agent import Agent
 from src.agents.checkpointable import CheckpointableAgent
 
@@ -335,28 +335,3 @@ def test_loaded_agent_can_play(checkpoint_fixture, game_fixture, request):
     assert game.legal_actions(state)[action2]
 
 
-# ===== Deprecation Tests =====
-
-def test_deprecated_tictactoe_class_shows_warning(tictactoe_game, tictactoe_mcts_real):
-    """Using TicTacToeAlphaZeroAgent should show deprecation warning."""
-    from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
-
-    with pytest.warns(DeprecationWarning, match="Use AlphaZeroAgent instead"):
-        TicTacToeAlphaZeroAgent(tictactoe_game, tictactoe_mcts_real)
-
-
-def test_deprecated_connect4_class_shows_warning(connect4_game, connect4_mcts_real):
-    """Using Connect4AlphaZeroAgent should show deprecation warning."""
-    from src.agents.connect4_alphazero_agent import Connect4AlphaZeroAgent
-
-    with pytest.warns(DeprecationWarning, match="Use AlphaZeroAgent instead"):
-        Connect4AlphaZeroAgent(connect4_game, connect4_mcts_real)
-
-
-def test_deprecated_classes_are_subclasses():
-    """Deprecated classes should be subclasses of AlphaZeroAgent."""
-    from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
-    from src.agents.connect4_alphazero_agent import Connect4AlphaZeroAgent
-
-    assert issubclass(TicTacToeAlphaZeroAgent, AlphaZeroAgent)
-    assert issubclass(Connect4AlphaZeroAgent, AlphaZeroAgent)

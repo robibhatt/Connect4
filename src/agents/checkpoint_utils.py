@@ -7,15 +7,17 @@ Provides high-level functions for agent persistence.
 from __future__ import annotations
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, TYPE_CHECKING
 
 import yaml
 
 from src.agents.checkpointable import CheckpointableAgent
-from src.agents.alphazero_agent_config import AlphaZeroAgentConfig
 from src.agents.registry import AgentRegistry
 from src.agents.agent import Agent
 from src.games.core.registry import GameRegistry
+
+if TYPE_CHECKING:
+    from src.algorithms.alphazero import AlphaZeroAgentConfig
 
 
 def save_agent_checkpoint(

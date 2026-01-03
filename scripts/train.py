@@ -5,10 +5,9 @@ import yaml
 
 from src.games.core.registry import GameRegistry
 from src.models.registry import ModelRegistry
-from src.algorithms.alphazero import MCTS, MCTSConfig, Trainer, TrainerArgs
+from src.algorithms.alphazero import MCTS, MCTSConfig, Trainer, TrainerArgs, AlphaZeroAgentConfig
 from src.algorithms.registry import AlgorithmRegistry
 from src.algorithms.alphazero.config import AlphaZeroConfig
-from src.agents.alphazero_agent_config import AlphaZeroAgentConfig
 from src.agents.checkpoint_utils import save_agent_checkpoint
 
 

@@ -1,7 +1,7 @@
 """Tests for AlphaZeroAgentConfig."""
 
 import pytest
-from src.agents.alphazero_agent_config import AlphaZeroAgentConfig
+from src.algorithms.alphazero import AlphaZeroAgentConfig
 
 
 # ===== Construction Tests =====

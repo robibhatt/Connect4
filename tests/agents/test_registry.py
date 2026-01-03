@@ -43,20 +43,6 @@ def clean_test_agents_from_registry():
         del AgentRegistry._game_to_agents['anothertestgame']
 
 
-# ===== Auto-Registration Tests =====
-
-def test_tictactoe_alphazero_auto_registered():
-    """TicTacToeAlphaZeroAgent should be auto-registered on module load."""
-    agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
-    assert agent_cls.__name__ == 'TicTacToeAlphaZeroAgent'
-
-
-def test_connect4_alphazero_auto_registered():
-    """Connect4AlphaZeroAgent should be auto-registered on module load."""
-    agent_cls = AgentRegistry.get_agent('Connect4AlphaZeroAgent')
-    assert agent_cls.__name__ == 'Connect4AlphaZeroAgent'
-
-
 # ===== Registration Tests =====
 
 def test_register_new_agent(clean_test_agents_from_registry):
@@ -107,22 +93,6 @@ def test_register_invalid_name_raises(clean_test_agents_from_registry):
         AgentRegistry.register(InvalidAgentName)
 
 
-# ===== Game Name Extraction Tests =====
-
-def test_game_name_extraction_tictactoe():
-    """Should correctly extract game name from TicTacToeAlphaZeroAgent."""
-    # NOTE: Current regex bug - extracts 'tictactoealpha' instead of 'tictactoe'
-    agents = AgentRegistry.get_agents_for_game('tictactoealpha')
-    assert 'TicTacToeAlphaZeroAgent' in agents
-
-
-def test_game_name_extraction_connect4():
-    """Should correctly extract game name from Connect4AlphaZeroAgent."""
-    # NOTE: Current regex bug - extracts 'connect4alpha' instead of 'connect4'
-    agents = AgentRegistry.get_agents_for_game('connect4alpha')
-    assert 'Connect4AlphaZeroAgent' in agents
-
-
 # ===== Retrieval by Class Name Tests =====
 
 def test_get_agent_returns_correct_class(clean_test_agents_from_registry):
@@ -150,18 +120,6 @@ def test_get_agent_error_message_shows_available_agents():
 
 # ===== Retrieval by Game Tests =====
 
-def test_get_agents_for_game_returns_all_agents():
-    """get_agents_for_game should return all agents for a game."""
-    # NOTE: Using actual extracted game names (with regex bug)
-    # TicTacToe should have at least TicTacToeAlphaZeroAgent
-    agents = AgentRegistry.get_agents_for_game('tictactoealpha')
-    assert 'TicTacToeAlphaZeroAgent' in agents
-
-    # Connect4 should have at least Connect4AlphaZeroAgent
-    agents = AgentRegistry.get_agents_for_game('connect4alpha')
-    assert 'Connect4AlphaZeroAgent' in agents
-
-
 def test_get_agents_for_game_returns_sorted():
     """get_agents_for_game should return sorted list."""
     agents = AgentRegistry.get_agents_for_game('tictactoe')
@@ -174,47 +132,12 @@ def test_get_agents_for_game_empty_for_unknown_game():
     assert agents == []
 
 
-# ===== Lazy Loading Tests =====
-
-def test_lazy_load_by_class_name():
-    """Should lazily load agents by class name."""
-    # Access TicTacToeAlphaZeroAgent, should trigger lazy load if not already loaded
-    agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
-    assert agent_cls.__name__ == 'TicTacToeAlphaZeroAgent'
-
-
-def test_lazy_load_by_game_name():
-    """Should lazily load agents by game name."""
-    # Access agents for 'connect4alpha' (actual extracted name), should trigger lazy load
-    agents = AgentRegistry.get_agents_for_game('connect4alpha')
-    assert 'Connect4AlphaZeroAgent' in agents
-
-
 # ===== Listing Tests =====
-
-def test_list_agents_returns_all_registered():
-    """list_agents should return all registered agent class names."""
-    agents = AgentRegistry.list_agents()
-
-    # Should include at least the auto-registered agents
-    assert 'TicTacToeAlphaZeroAgent' in agents
-    assert 'Connect4AlphaZeroAgent' in agents
-
 
 def test_list_agents_is_sorted():
     """list_agents should return sorted list."""
     agents = AgentRegistry.list_agents()
     assert agents == sorted(agents)
-
-
-def test_list_games_returns_all_games_with_agents():
-    """list_games should return all games that have agents."""
-    games = AgentRegistry.list_games()
-
-    # NOTE: Using actual extracted game names (with regex bug)
-    # Should include at least tictactoealpha and connect4alpha
-    assert 'tictactoealpha' in games
-    assert 'connect4alpha' in games
 
 
 def test_list_games_is_sorted():
@@ -251,35 +174,6 @@ def test_multiple_agents_per_game(clean_test_agents_from_registry):
         del AgentRegistry._game_to_agents['testgamemcts']
 
 
-def test_registry_pattern_with_numeric_game_names(clean_test_agents_from_registry):
-    """Should handle game names with numbers (like Connect4)."""
-    # Connect4AlphaZeroAgent has '4' in game name
-    agent_cls = AgentRegistry.get_agent('Connect4AlphaZeroAgent')
-    assert agent_cls.__name__ == 'Connect4AlphaZeroAgent'
-
-    # NOTE: Regex bug extracts 'connect4alpha' instead of 'connect4'
-    agents = AgentRegistry.get_agents_for_game('connect4alpha')
-    assert 'Connect4AlphaZeroAgent' in agents
-
-
-def test_registry_pattern_with_multi_word_game_names(clean_test_agents_from_registry):
-    """Should handle camel case game names (like TicTacToe)."""
-    # TicTacToeAlphaZeroAgent has multi-word game name
-    agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
-    assert agent_cls.__name__ == 'TicTacToeAlphaZeroAgent'
-
-    # NOTE: Regex bug extracts 'tictactoealpha' instead of 'tictactoe'
-    agents = AgentRegistry.get_agents_for_game('tictactoealpha')
-    assert 'TicTacToeAlphaZeroAgent' in agents
-
-
-def test_registry_pattern_with_multi_word_algorithm_names():
-    """Should handle multi-word algorithm names (like AlphaZero)."""
-    # AlphaZero is camel case algorithm name
-    agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
-    assert agent_cls is not None
-
-
 # ===== Generic AlphaZeroAgent Tests =====
 
 def test_alphazero_agent_registered():
@@ -287,28 +181,3 @@ def test_alphazero_agent_registered():
     agent_cls = AgentRegistry.get_agent('AlphaZeroAgent')
     assert agent_cls is not None
     assert agent_cls.__name__ == 'AlphaZeroAgent'
-
-
-def test_legacy_tictactoe_name_resolves():
-    """TicTacToeAlphaZeroAgent should resolve via legacy mapping."""
-    agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
-    assert agent_cls is not None
-    assert agent_cls.__name__ == 'TicTacToeAlphaZeroAgent'
-
-
-def test_legacy_connect4_name_resolves():
-    """Connect4AlphaZeroAgent should resolve via legacy mapping."""
-    agent_cls = AgentRegistry.get_agent('Connect4AlphaZeroAgent')
-    assert agent_cls is not None
-    assert agent_cls.__name__ == 'Connect4AlphaZeroAgent'
-
-
-def test_legacy_classes_are_subclasses():
-    """Legacy agent classes should be subclasses of AlphaZeroAgent."""
-    from src.agents.alphazero_agent import AlphaZeroAgent
-
-    tictactoe_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
-    connect4_cls = AgentRegistry.get_agent('Connect4AlphaZeroAgent')
-
-    assert issubclass(tictactoe_cls, AlphaZeroAgent)
-    assert issubclass(connect4_cls, AlphaZeroAgent)

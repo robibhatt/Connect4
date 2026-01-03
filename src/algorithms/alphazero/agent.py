@@ -11,7 +11,7 @@ import yaml
 from src.games.core.game import Game, State
 from src.agents.agent import Agent
 from src.agents.checkpointable import CheckpointableAgent
-from src.algorithms.alphazero import MCTS, MCTSConfig
+from src.algorithms.alphazero.mcts import MCTS, MCTSConfig
 from src.models.registry import ModelRegistry
 
 

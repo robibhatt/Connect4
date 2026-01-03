@@ -183,22 +183,13 @@ class Trainer:
 
     def create_agent(self) -> CheckpointableAgent:
         """
-        Create agent from trained model using registry.
+        Create agent from trained model.
 
         This is called after training completes to package the
         trained model into a playable agent.
 
         Returns:
             Agent instance ready to be saved or used for play
-
-        Raises:
-            KeyError: If agent class not found in registry
         """
-        game_class_name = self.game.__class__.__name__
-        agent_class_name = f"{game_class_name}AlphaZeroAgent"
-
-        # Get from registry
-        AgentClass = AgentRegistry.get_agent(agent_class_name)
-
-        # Construct agent
-        return AgentClass(game=self.game, mcts=self.mcts)
+        from src.algorithms.alphazero.agent import AlphaZeroAgent
+        return AlphaZeroAgent(game=self.game, mcts=self.mcts)

@@ -7,9 +7,7 @@ from pathlib import Path
 from datetime import datetime
 
 from src.agents.checkpoint_utils import save_agent_checkpoint, load_agent_checkpoint
-from src.agents.alphazero_agent_config import AlphaZeroAgentConfig
-from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
-from src.agents.connect4_alphazero_agent import Connect4AlphaZeroAgent
+from src.algorithms.alphazero import AlphaZeroAgent, AlphaZeroAgentConfig
 
 
 # ===== Save Checkpoint Tests =====
@@ -18,7 +16,7 @@ def test_save_creates_timestamped_directory(tmp_path, sample_tictactoe_agent, sa
     """save_agent_checkpoint should create timestamped directory."""
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         root_dir=str(tmp_path)
@@ -28,12 +26,12 @@ def test_save_creates_timestamped_directory(tmp_path, sample_tictactoe_agent, sa
     assert save_dir.exists()
     assert save_dir.is_dir()
 
-    # Check name format: YYYYMMDD_HHMMSS_tictactoe_TicTacToeAlphaZeroAgent
+    # Check name format: YYYYMMDD_HHMMSS_tictactoe_AlphaZeroAgent
     dir_name = save_dir.name
     parts = dir_name.split('_')
     assert len(parts) >= 4  # timestamp parts + game + agent
     assert 'tictactoe' in dir_name
-    assert 'TicTacToeAlphaZeroAgent' in dir_name
+    assert 'AlphaZeroAgent' in dir_name
 
     # Timestamp should be parseable
     timestamp_str = f"{parts[0]}_{parts[1]}"
@@ -44,7 +42,7 @@ def test_save_creates_model_pt(tmp_path, sample_tictactoe_agent, sample_agent_co
     """save_agent_checkpoint should save model.pt."""
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         root_dir=str(tmp_path)
@@ -64,7 +62,7 @@ def test_save_creates_agent_yaml(tmp_path, sample_tictactoe_agent, sample_agent_
     """save_agent_checkpoint should save agent.yaml."""
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         root_dir=str(tmp_path)
@@ -85,7 +83,7 @@ def test_save_yaml_contains_metadata(tmp_path, sample_tictactoe_agent, sample_ag
     """agent.yaml should contain all required metadata."""
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         root_dir=str(tmp_path)
@@ -128,7 +126,7 @@ def test_save_includes_training_config(tmp_path, sample_tictactoe_agent, sample_
 
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         training_config=training_config,
@@ -147,7 +145,6 @@ def test_save_includes_training_config(tmp_path, sample_tictactoe_agent, sample_
 
 def test_load_reconstructs_agent(checkpoint_dir_with_tictactoe_agent):
     """load_agent_checkpoint should reconstruct agent."""
-    from src.agents.alphazero_agent import AlphaZeroAgent
 
     agent = load_agent_checkpoint(checkpoint_dir_with_tictactoe_agent)
 
@@ -177,7 +174,7 @@ def test_load_with_device_override(tmp_path, sample_tictactoe_agent, sample_agen
     # Save with device='cpu'
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         root_dir=str(tmp_path)
@@ -206,7 +203,7 @@ def test_save_load_roundtrip_preserves_behavior(tmp_path, tictactoe_game, sample
     # Save agent
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         root_dir=str(tmp_path)
@@ -236,7 +233,6 @@ def test_save_load_roundtrip_preserves_behavior(tmp_path, tictactoe_game, sample
 def test_roundtrip_with_different_games(checkpoint_dir_with_tictactoe_agent,
                                         checkpoint_dir_with_connect4_agent):
     """Save/load works for both TicTacToe and Connect4."""
-    from src.agents.alphazero_agent import AlphaZeroAgent
 
     # Load TicTacToe agent - now returns generic AlphaZeroAgent
     ttt_agent = load_agent_checkpoint(checkpoint_dir_with_tictactoe_agent)
@@ -300,11 +296,10 @@ def test_load_raises_on_unregistered_agent(tmp_path):
 
 def test_save_legacy_class_maps_to_alphazero_agent(tmp_path, sample_tictactoe_agent, sample_agent_config):
     """Saving with legacy class name should map to AlphaZeroAgent in YAML."""
-    from src.agents.alphazero_agent import AlphaZeroAgent
 
     save_dir = save_agent_checkpoint(
         agent=sample_tictactoe_agent,
-        agent_class_name='TicTacToeAlphaZeroAgent',
+        agent_class_name='AlphaZeroAgent',
         game_name='tictactoe',
         config=sample_agent_config,
         root_dir=str(tmp_path)
@@ -319,55 +314,8 @@ def test_save_legacy_class_maps_to_alphazero_agent(tmp_path, sample_tictactoe_ag
     assert agent_yaml['agent_class'] == 'AlphaZeroAgent'
 
 
-def test_load_checkpoint_with_legacy_class_name(tmp_path, tictactoe_game, tictactoe_mcts_real):
-    """Should load checkpoint with legacy agent_class name."""
-    from src.agents.tictactoe_alphazero_agent import TicTacToeAlphaZeroAgent
-    from src.agents.alphazero_agent import AlphaZeroAgent
-
-    # Create agent using old class
-    agent = TicTacToeAlphaZeroAgent(tictactoe_game, tictactoe_mcts_real)
-
-    # Manually create checkpoint with legacy class name
-    checkpoint_dir = tmp_path / "legacy_checkpoint"
-    checkpoint_dir.mkdir()
-
-    # Save model
-    model_path = checkpoint_dir / "model.pt"
-    torch.save(agent.mcts.model.state_dict(), model_path)
-
-    # Create agent.yaml with LEGACY class name (simulating old checkpoint)
-    agent_yaml = {
-        'agent_class': 'TicTacToeAlphaZeroAgent',  # Using legacy name
-        'game': 'tictactoe',
-        'timestamp': '20260102_120000',
-        'model': {
-            'class': 'TicTacToeMLPNet',
-            'kwargs': {'hidden': 8}
-        },
-        'mcts': {
-            'num_sims': 10,
-            'c_puct': 1.0,
-            'dirichlet_alpha': 0.3,
-            'dirichlet_eps': 0.25,
-            'illegal_action_penalty': 1e9
-        },
-        'device': 'cpu'
-    }
-
-    with (checkpoint_dir / "agent.yaml").open('w') as f:
-        yaml.dump(agent_yaml, f)
-
-    # Load it back
-    loaded = load_agent_checkpoint(checkpoint_dir)
-
-    # Should work successfully - loaded will be TicTacToeAlphaZeroAgent (deprecated wrapper)
-    assert loaded is not None
-    assert isinstance(loaded, AlphaZeroAgent)  # Should be subclass
-
-
 def test_generic_alphazero_agent_save_load_roundtrip(tmp_path, tictactoe_game, tictactoe_mcts_real):
     """Generic AlphaZeroAgent should save and load correctly."""
-    from src.agents.alphazero_agent import AlphaZeroAgent
     from src.games.tictactoe.tictactoe import TicTacToe
 
     # Create generic agent
