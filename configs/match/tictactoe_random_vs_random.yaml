@@ -1,0 +1,24 @@
+# TicTacToe: Random vs Random Match
+# ==================================
+# Watch two random agents play each other - works immediately!
+# Useful for testing the simulate_match script
+
+game: tictactoe
+
+match:
+  num_games: 100  # Number of games to simulate
+
+# Agent 1: Random agent
+agent1:
+  type: random
+
+# Agent 2: Random agent
+agent2:
+  type: random
+
+# Notes:
+# ------
+# - No training required - this config works immediately
+# - Expect roughly 50/50 win rate between agents (with some draws)
+# - Good for verifying the match simulation script works
+# - Increase num_games for more accurate statistics

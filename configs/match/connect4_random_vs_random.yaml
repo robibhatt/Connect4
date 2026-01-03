@@ -1,0 +1,25 @@
+# Connect4: Random vs Random Match
+# =================================
+# Watch two random agents play Connect4 - works immediately!
+# Useful for testing the simulate_match script
+
+game: connect4
+
+match:
+  num_games: 50  # Fewer games than TicTacToe (Connect4 is slower)
+
+# Agent 1: Random agent
+agent1:
+  type: random
+
+# Agent 2: Random agent
+agent2:
+  type: random
+
+# Notes:
+# ------
+# - No training required - this config works immediately
+# - Connect4 games take longer than TicTacToe
+# - Expect roughly 50/50 win rate between agents
+# - Good for verifying the match simulation script works
+# - Increase num_games for more accurate statistics

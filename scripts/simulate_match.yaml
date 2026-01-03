@@ -1,0 +1,36 @@
+# Simulate Match Configuration
+# Run two agents against each other for multiple games
+
+# Game to play
+game: tictactoe  # Options: 'tictactoe' or 'connect4'
+
+# Match settings
+match:
+  num_games: 100  # Number of games to play
+
+# Agent 1 Configuration
+agent1:
+  type: random  # Options: 'alphazero' or 'random'
+  # For AlphaZero agents, add:
+  # checkpoint_dir: saved_agents/YOUR_CHECKPOINT_DIR
+
+# Agent 2 Configuration
+agent2:
+  type: random  # Options: 'alphazero' or 'random'
+  # For AlphaZero agents, add:
+  # checkpoint_dir: saved_agents/YOUR_CHECKPOINT_DIR
+
+# Example AlphaZero vs Random configuration:
+# agent1:
+#   type: alphazero
+#   checkpoint_dir: saved_agents/20260102_143045_tictactoe_AlphaZeroAgent
+# agent2:
+#   type: random
+
+# Example AlphaZero vs AlphaZero configuration:
+# agent1:
+#   type: alphazero
+#   checkpoint_dir: saved_agents/checkpoint_1
+# agent2:
+#   type: alphazero
+#   checkpoint_dir: saved_agents/checkpoint_2

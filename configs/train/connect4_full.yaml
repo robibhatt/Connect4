@@ -1,0 +1,52 @@
+# Connect4 Full Training Configuration
+# =====================================
+# Full training for producing competitive Connect4 agents
+# Expect several hours depending on hardware
+
+game: connect4
+
+algorithm:
+  name: alphazero
+
+  # Hardware device - update based on your system
+  device: mps  # Options: 'cpu', 'cuda' (NVIDIA GPU), 'mps' (Apple Silicon)
+
+  # Model architecture
+  model:
+    class: Connect4MLPNet
+    hidden: 128  # Larger than TicTacToe due to bigger state space
+
+  # Training loop
+  iterations: 300                    # Full training iterations
+  games_per_iteration: 8             # Self-play games per iteration
+  batch_size: 64                     # Training batch size
+  train_steps_per_iteration: 50      # Gradient steps per iteration
+  lr: 0.003                          # Learning rate
+  weight_decay: 0.0001               # L2 regularization
+  value_loss_coef: 1.0               # Weight for value loss
+
+  # Self-play behavior
+  temp_moves: 10                     # More exploration moves than TicTacToe
+  tau: 1.0                           # Temperature for exploration
+  deterministic_after_temp: true     # Use argmax after temp_moves
+  add_dirichlet_noise: true          # Add root noise for exploration
+
+  # MCTS search
+  num_sims: 100                      # More simulations for better play
+  c_puct: 1.25                       # PUCT exploration constant
+  dirichlet_alpha: 0.3               # Lower alpha for Connect4 (more actions)
+  dirichlet_eps: 0.2                 # Dirichlet noise weight
+  illegal_action_penalty: 1000000000.0
+
+  # Experience buffer
+  buffer_capacity: 40000             # Max samples in replay buffer
+  clear_mcts_each_game: true         # Clear search tree between games
+
+# Notes:
+# ------
+# - This produces strong Connect4 agents
+# - 300 iterations with 100 MCTS sims provides good performance
+# - Connect4 is more complex than TicTacToe, requires more training
+# - Trained model will be saved to saved_agents/
+# - Use configs/play/connect4_alphazero.yaml to play against it
+# - Consider running on GPU (cuda/mps) for faster training
