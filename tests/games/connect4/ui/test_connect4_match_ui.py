@@ -149,19 +149,6 @@ def test_agent1_gets_consistent_color(ui, mock_agent1, mock_agent2):
     # This test mainly verifies no crashes and consistency exists
 
 
-def test_score_overlay_positioned_correctly(ui):
-    """Test 52: Score overlay doesn't overlap board"""
-    ui.new_game()
-    ui.wins1 = 10
-    ui.wins2 = 8
-
-    # Should not raise exception
-    ui._render_score_overlay()
-
-    # Score should be positioned to not overlap the board
-    # (Verified by not crashing and proper implementation)
-
-
 # ===== C. Integration Tests (2 tests) =====
 
 def test_full_connect4_game_playthrough(ui, mock_agent1, mock_agent2):

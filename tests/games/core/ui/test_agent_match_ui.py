@@ -836,65 +836,6 @@ def test_board_geometry_adapts_to_window_size(game, mock_agent1, mock_agent2):
         assert ui.board_y0 >= cfg.top_bar_height
 
 
-@pytest.mark.skip(reason="Text rendering moved to CLI - layout manager deprecated")
-def test_vertical_spacing_between_hint_and_agent_labels(game, mock_agent1, mock_agent2):
-    """Test 44: Hint text and agent labels have adequate vertical spacing"""
-    pg.init()
-    ui = ConcreteAgentMatchUI(game, mock_agent1, mock_agent2,
-                              agent1_name="Agent1", agent2_name="Agent2")
-    ui.screen = pg.Surface((ui.cfg.window_size, ui.cfg.window_size))
-    ui.font = pg.font.SysFont(None, 26)
-    ui.big_font = pg.font.SysFont(None, 34)
-    ui._compute_board_geometry()
-    ui.new_game()
-
-    # Trigger layout calculation
-    ui._setup_text_elements()
-    ui.layout_manager.calculate_layout()
-
-    # Get actual positions from layout manager
-    hint_elem = ui.layout_manager.elements['hint_text']
-    hint_bottom = hint_elem.y + hint_elem.get_bounds()[3]
-
-    agent_elem = ui.layout_manager.elements['agent_labels']
-    agent_label_y = agent_elem.y
-
-    # Should have at least 5px vertical gap (matches VERTICAL_SPACING)
-    gap = agent_label_y - hint_bottom
-    assert gap >= 5, \
-        f"Insufficient gap between hint ({hint_bottom}px) and labels ({agent_label_y}px): {gap}px"
-
-
-@pytest.mark.skip(reason="Text rendering moved to CLI - layout manager deprecated")
-def test_main_message_has_minimum_20px_gap_to_score(game, mock_agent1, mock_agent2):
-    """Test 45: Main message maintains 20px minimum gap from score overlay"""
-    pg.init()
-    ui = ConcreteAgentMatchUI(game, mock_agent1, mock_agent2,
-                              agent1_name="VeryLongAgentName1",
-                              agent2_name="VeryLongAgentName2")
-    ui.screen = pg.Surface((600, 600))  # Smallest window
-    ui.font = pg.font.SysFont(None, 26)
-    ui.big_font = pg.font.SysFont(None, 34)
-    ui._compute_board_geometry()
-    ui.new_game()
-
-    # Trigger layout calculation
-    ui._setup_text_elements()
-    ui.layout_manager.calculate_layout()
-
-    # Get actual positions from layout manager
-    msg_elem = ui.layout_manager.elements['main_message']
-    msg_end_x = msg_elem.x + msg_elem.get_bounds()[2]
-
-    score_elem = ui.layout_manager.elements['score_games']
-    score_start_x = score_elem.x
-
-    # CRITICAL: Must have 20px gap even on small window
-    gap = score_start_x - msg_end_x
-    assert gap >= 20, \
-        f"Main message too close to score: only {gap}px gap (need 20px minimum)"
-
-
 def test_score_overlay_right_aligned_with_margin(game, mock_agent1, mock_agent2):
     """Test 46: Score overlay is right-aligned with proper margin, not fixed offset"""
     pg.init()

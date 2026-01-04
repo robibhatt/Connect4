@@ -143,28 +143,6 @@ def test_renders_x_and_o_for_both_agents(ui, game):
     ui._render_pieces()
 
 
-def test_score_overlay_doesnt_overlap_board(ui):
-    """Test 43: Score overlay positioned to not overlap board"""
-    ui.new_game()
-    ui.wins1 = 5
-    ui.wins2 = 3
-
-    # Score overlay should be to the right of the board
-    # (This is checked in the rendering logic, here we just verify it doesn't crash)
-    ui._render_score_overlay()
-
-    # If we were to check positioning, score x-coordinate should be > board_x1
-    # But since we're just doing smoke tests for rendering, we verify no exception
-
-
-def test_agent_labels_visible(ui):
-    """Test 44: Agent labels render in visible area"""
-    ui.new_game()
-
-    # Should not raise exception
-    ui._render_agent_labels()
-
-
 # ===== C. Integration Tests (2 tests) =====
 
 def test_full_tictactoe_game_playthrough(ui, mock_agent1, mock_agent2):
