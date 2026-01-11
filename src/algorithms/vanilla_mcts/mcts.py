@@ -87,6 +87,8 @@ class VanillaMCTS:
         hash = self.game.key(s=root)
         if hash in self.nodes:
             root_node = self.nodes[hash]
+            self.clear()
+            self.nodes[hash] = root_node
 
         else:
 
@@ -118,7 +120,7 @@ class VanillaMCTS:
         best_child = None
         for child in node.children:
             if child is not None:
-                child_score = - 1.0 * child.Q + self.cfg.c_exploration * math.sqrt(math.log(node.N) / math.sqrt(child.N))
+                child_score = - 1.0 * child.Q + self.cfg.c_exploration * math.sqrt(math.log(node.N) / child.N)
                 if best_score is None or child_score > best_score:
                     best_score = child_score
                     best_child = child
@@ -140,11 +142,9 @@ class VanillaMCTS:
                 sign *= -1.0
 
                 # get a random legal action
-                action_probs = np.ones(self.game.action_size)
                 legal_actions = self.game.legal_actions(s=current_state)
-                action_probs = np.where(legal_actions, action_probs, 0.0)
-                action_probs = action_probs / np.sum(action_probs)
-                action = self.rng.choice(self.game.action_size, p=action_probs)
+                legal_indices = np.flatnonzero(legal_actions)
+                action = self.rng.choice(legal_indices)
 
                 # get the next state
                 current_state = self.game.next_state(s=current_state, a=action)
@@ -220,7 +220,7 @@ class VanillaMCTS:
             final_reward *= -1
 
         # update dictionary
-        for path_node in visited_nodes[:2]:
+        for path_node in visited_nodes[:3]:
             hash = self.game.key(path_node.state)
             if hash not in self.nodes:
                 self.nodes[hash] = path_node

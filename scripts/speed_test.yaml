@@ -1,0 +1,8 @@
+# Speed Test Configuration
+# Measure agent move timing via self-play
+
+game: connect4
+num_games: 10
+
+agent:
+  checkpoint_dir: saved_agents/20260110_180257_connect4_VanillaMCTSAgent
