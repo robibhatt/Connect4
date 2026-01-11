@@ -1,0 +1,14 @@
+# Match: AlphaZero vs Random on TicTacToe
+# Usage: cp scripts/samples/match_tictactoe_alphazero_vs_random.yaml scripts/simulate_match.yaml && python scripts/simulate_match.py
+
+game: tictactoe
+
+match:
+  num_games: 100
+
+agent1:
+  type: alphazero
+  checkpoint_dir: saved_agents/YOUR_CHECKPOINT_HERE  # Update this path!
+
+agent2:
+  type: random

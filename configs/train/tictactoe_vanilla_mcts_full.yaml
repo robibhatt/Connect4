@@ -1,0 +1,20 @@
+# TicTacToe Vanilla MCTS Full Configuration
+# =========================================
+# Production-strength configuration
+
+game: tictactoe
+
+algorithm:
+  name: vanilla_mcts
+
+  # Validation
+  num_test_games: 50
+  random_seed: 42
+  verbose: true
+
+  # MCTS - strong configuration
+  num_sims: 10000              # High for strong play
+  c_exploration: 1.414
+  max_rollout_depth: null      # Unlimited (play to terminal)
+  rollout_seed: 42
+  illegal_action_penalty: 1e9

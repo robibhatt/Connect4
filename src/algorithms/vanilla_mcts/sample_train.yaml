@@ -2,7 +2,7 @@
 # ===================================
 # Demonstrates how to configure Vanilla MCTS (no neural networks)
 
-game: connect4
+game: tictactoe
 
 algorithm:
   name: vanilla_mcts

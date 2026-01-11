@@ -59,24 +59,44 @@ def save_agent_checkpoint(
     if agent_class_name in ['TicTacToeAlphaZeroAgent', 'Connect4AlphaZeroAgent']:
         agent_class_name = 'AlphaZeroAgent'
 
-    # Build agent.yaml
+    # Build agent.yaml conditionally based on config type
     agent_yaml = {
         'agent_class': agent_class_name,
         'game': game_name,
         'timestamp': timestamp,
-        'model': {
-            'class': config.model_class,
-            'kwargs': config.model_kwargs
-        },
-        'mcts': {
-            'num_sims': config.num_sims,
-            'c_puct': config.c_puct,
-            'dirichlet_alpha': config.dirichlet_alpha,
-            'dirichlet_eps': config.dirichlet_eps,
-            'illegal_action_penalty': config.illegal_action_penalty,
-        },
         'device': config.device,
     }
+
+    # Add model section only if config has model fields (AlphaZero)
+    if hasattr(config, 'model_class') and hasattr(config, 'model_kwargs'):
+        agent_yaml['model'] = {
+            'class': config.model_class,
+            'kwargs': config.model_kwargs
+        }
+
+    # Build MCTS section (supports both AlphaZero and Vanilla MCTS)
+    mcts_config = {}
+    # Common fields
+    if hasattr(config, 'num_sims'):
+        mcts_config['num_sims'] = config.num_sims
+    if hasattr(config, 'illegal_action_penalty'):
+        mcts_config['illegal_action_penalty'] = config.illegal_action_penalty
+    # AlphaZero fields
+    if hasattr(config, 'c_puct'):
+        mcts_config['c_puct'] = config.c_puct
+    if hasattr(config, 'dirichlet_alpha'):
+        mcts_config['dirichlet_alpha'] = config.dirichlet_alpha
+    if hasattr(config, 'dirichlet_eps'):
+        mcts_config['dirichlet_eps'] = config.dirichlet_eps
+    # Vanilla MCTS fields
+    if hasattr(config, 'c_exploration'):
+        mcts_config['c_exploration'] = config.c_exploration
+    if hasattr(config, 'max_rollout_depth'):
+        mcts_config['max_rollout_depth'] = config.max_rollout_depth
+    if hasattr(config, 'rollout_seed'):
+        mcts_config['rollout_seed'] = config.rollout_seed
+
+    agent_yaml['mcts'] = mcts_config
 
     if training_config:
         agent_yaml['training'] = training_config

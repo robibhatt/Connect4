@@ -1,0 +1,7 @@
+# Play TicTacToe against a random agent (easy mode)
+# Usage: cp scripts/samples/play_tictactoe_vs_random.yaml scripts/human_play.yaml && python scripts/human_play.py
+
+game: tictactoe
+
+agent:
+  type: random

@@ -26,3 +26,21 @@ __all__ = [
     'AlphaZeroAgent',
     'AlphaZeroAgentConfig',
 ]
+
+
+def register_algorithm():
+    """Register AlphaZero with the AlgorithmRegistry."""
+    from src.algorithms.registry import AlgorithmRegistry, AlgorithmMetadata
+    from src.algorithms.alphazero.factories import create_alphazero_agent_config
+
+    AlgorithmRegistry.register(
+        'alphazero',
+        AlphaZeroConfig,
+        create_alphazero_trainer,
+        create_alphazero_agent_config,
+        AlgorithmMetadata(
+            requires_model=True,
+            requires_checkpoint=True,
+            checkpoint_files=('agent.yaml', 'model.pt')
+        )
+    )

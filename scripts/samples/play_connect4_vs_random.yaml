@@ -1,0 +1,7 @@
+# Play Connect4 against a random agent (easy mode)
+# Usage: cp scripts/samples/play_connect4_vs_random.yaml scripts/human_play.yaml && python scripts/human_play.py
+
+game: connect4
+
+agent:
+  type: random

@@ -1,26 +1,24 @@
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Any
 
 import yaml
 
 from src.games.core.registry import GameRegistry
 from src.models.registry import ModelRegistry
-from src.algorithms.alphazero import MCTS, MCTSConfig, Trainer, TrainerArgs, AlphaZeroAgentConfig
 from src.algorithms.registry import AlgorithmRegistry
-from src.algorithms.alphazero.config import AlphaZeroConfig
 from src.agents.checkpoint_utils import save_agent_checkpoint
 
 
-def load_config(config_path: Path) -> Tuple[str, AlphaZeroConfig, dict]:
+def load_config(config_path: Path) -> Tuple[str, str, Any, dict]:
     """
     Load configuration from YAML file.
 
-    Supports new algorithm-based format:
+    Supports algorithm-based format:
         game: tictactoe
         algorithm:
-          name: alphazero
+          name: alphazero  # or vanilla_mcts
           device: mps
-          model:
+          model:           # optional, only for algorithms that need it
             class: TicTacToeMLPNet
             hidden: 64
           iterations: 400
@@ -29,7 +27,8 @@ def load_config(config_path: Path) -> Tuple[str, AlphaZeroConfig, dict]:
 
     Returns:
         game_name: Name of the game to train
-        config: AlphaZeroConfig instance
+        algo_name: Name of the algorithm
+        config: Algorithm config instance (AlphaZeroConfig, VanillaMCTSConfig, etc.)
         full_config: Complete config dict for saving
     """
     with config_path.open("r") as f:
@@ -57,52 +56,50 @@ def load_config(config_path: Path) -> Tuple[str, AlphaZeroConfig, dict]:
     # Get config class from registry
     ConfigClass = AlgorithmRegistry.get_config_class(algo_name)
 
-    # Extract model config from nested structure
-    model_config = algo_config.get("model", {}).copy()
-    if 'class' not in model_config:
-        raise ValueError(
-            "Algorithm.model must include 'class' field. "
-            "Example: model: { class: TicTacToeMLPNet, hidden: 64 }"
-        )
+    # Build config params from algorithm section (excluding 'name' and 'model')
+    config_params = {k: v for k, v in algo_config.items() if k not in ['name', 'model']}
 
-    model_class_name = model_config.pop('class')
-    model_kwargs = model_config  # Remaining fields are kwargs
-
-    # Build config dict (flatten algorithm section)
-    config_params = {
-        'model_class': model_class_name,
-        'model_kwargs': model_kwargs,
-        **{k: v for k, v in algo_config.items() if k not in ['name', 'model']}
-    }
+    # Extract model config if present (only some algorithms need it)
+    model_config = algo_config.get("model", {})
+    if model_config:
+        model_config = model_config.copy()
+        if 'class' in model_config:
+            model_class_name = model_config.pop('class')
+            config_params['model_class'] = model_class_name
+            config_params['model_kwargs'] = model_config  # Remaining fields are kwargs
 
     # Instantiate config
     config = ConfigClass(**config_params)
 
-    return game_name, config, config_dict
+    return game_name, algo_name, config, config_dict
 
 
 def main():
     config_path = Path(__file__).parent / "train.yaml"
-    game_name, config, full_config = load_config(config_path)
+    game_name, algo_name, config, full_config = load_config(config_path)
 
     # Instantiate game using GameRegistry
     GameClass = GameRegistry.get_game(game_name)
     game = GameClass()
 
-    # Get model class from ModelRegistry and instantiate
-    ModelClass = ModelRegistry.get_model(config.model_class)
-    model = ModelClass(**config.model_kwargs)
+    # Conditionally create model (only if config specifies one)
+    model = None
+    if hasattr(config, 'model_class') and config.model_class:
+        ModelClass = ModelRegistry.get_model(config.model_class)
+        model = ModelClass(**config.model_kwargs)
+        ModelRegistry.validate_compatibility(game, model)
+        model_name = ModelClass.__name__
+    else:
+        model_name = "N/A"
 
     print(f"\n{'='*60}")
-    print(f"Training {ModelClass.__name__} for {game_name}")
-    print(f"Algorithm: AlphaZero")
+    print(f"Training for {game_name}")
+    print(f"Algorithm: {algo_name}")
+    print(f"Model: {model_name}")
     print(f"{'='*60}\n")
 
-    # Validate compatibility
-    ModelRegistry.validate_compatibility(game, model)
-
-    # Create trainer using registry factory
-    factory = AlgorithmRegistry.get_trainer_factory('alphazero')
+    # Create trainer using registry factory (uses algo_name, not hardcoded!)
+    factory = AlgorithmRegistry.get_trainer_factory(algo_name)
     trainer = factory(game, model, config)
 
     # Run training
@@ -111,17 +108,9 @@ def main():
     # Create agent from trained model
     agent = trainer.create_agent()
 
-    # Build agent config for saving
-    agent_config = AlphaZeroAgentConfig(
-        model_class=config.model_class,
-        model_kwargs=config.model_kwargs,
-        num_sims=config.num_sims,
-        c_puct=config.c_puct,
-        dirichlet_alpha=config.dirichlet_alpha,
-        dirichlet_eps=config.dirichlet_eps,
-        illegal_action_penalty=config.illegal_action_penalty,
-        device=config.device,
-    )
+    # Build agent config using registry factory
+    agent_config_factory = AlgorithmRegistry.get_agent_config_factory(algo_name)
+    agent_config = agent_config_factory(config)
 
     # Save agent checkpoint
     agent_class_name = agent.__class__.__name__

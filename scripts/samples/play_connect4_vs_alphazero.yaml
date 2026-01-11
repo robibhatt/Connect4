@@ -4,5 +4,5 @@
 game: connect4
 
 agent:
-  type: vanilla_mcts
-  checkpoint_dir: saved_agents/20260110_180257_connect4_VanillaMCTSAgent # Update this path!
+  type: alphazero
+  checkpoint_dir: saved_agents/YOUR_CHECKPOINT_HERE  # Update this path!

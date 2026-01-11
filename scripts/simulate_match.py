@@ -22,6 +22,7 @@ import yaml
 
 from src.agents import RandomAgent, load_agent_checkpoint
 from src.agents.agent import Agent
+from src.algorithms.registry import AlgorithmRegistry
 from src.games.core.game import Game
 from src.games.core.game_play import simulate_match
 from src.games.core.registry import GameRegistry
@@ -102,7 +103,7 @@ def validate_config_schema(config_dict: dict) -> None:
                 f"To fix:\n"
                 f"  Add an '{agent_key}' section to your config:\n\n"
                 f"  {agent_key}:\n"
-                f"    type: random  # or 'alphazero'"
+                f"    type: random  # or 'alphazero' or 'vanilla_mcts'"
             )
 
         if 'type' not in config_dict[agent_key]:
@@ -113,7 +114,7 @@ def validate_config_schema(config_dict: dict) -> None:
                 f"To fix:\n"
                 f"  Add a 'type' field under '{agent_key}':\n\n"
                 f"  {agent_key}:\n"
-                f"    type: random  # Options: 'random' or 'alphazero'"
+                f"    type: random  # Options: 'random', 'alphazero', or 'vanilla_mcts'"
             )
 
 
@@ -130,13 +131,13 @@ def validate_game_exists(game_name: str) -> None:
     try:
         GameRegistry.get_game(game_name)
     except KeyError:
-        available_games = ['tictactoe', 'connect4']
+        available_games = GameRegistry.list_games()
         raise ValueError(
             f"Problem: Unknown game '{game_name}'\n\n"
             f"Available games: {', '.join(available_games)}\n\n"
             "To fix:\n"
-            "  Set 'game' to one of the available game names:\n\n"
-            "  game: tictactoe  # or 'connect4'"
+            f"  Set 'game' to one of the available game names:\n\n"
+            f"  game: {available_games[0] if available_games else 'your_game'}"
         )
 
 
@@ -151,27 +152,36 @@ def validate_agent_type(agent_type: str, agent_num: int) -> None:
     Raises:
         ValueError: If agent type is invalid
     """
-    valid_types = ['alphazero', 'random']
+    valid_types = AlgorithmRegistry.get_all_algorithms()
     if agent_type not in valid_types:
+        # Build description of each algorithm type
+        type_descriptions = []
+        for algo in valid_types:
+            metadata = AlgorithmRegistry.get_metadata(algo)
+            if metadata.requires_checkpoint:
+                type_descriptions.append(f"  - {algo}: requires checkpoint_dir")
+            else:
+                type_descriptions.append(f"  - {algo}: no checkpoint needed")
+
         raise ValueError(
             f"Problem: Invalid agent{agent_num} type '{agent_type}'\n\n"
             f"Valid types:\n"
-            f"  - alphazero: Trained AlphaZero agent (requires checkpoint_dir)\n"
-            f"  - random: Random move agent (no checkpoint needed)\n\n"
+            f"{chr(10).join(type_descriptions)}\n\n"
             "To fix:\n"
-            f"  Set agent{agent_num}.type to 'alphazero' or 'random':\n\n"
+            f"  Set agent{agent_num}.type to one of the valid types:\n\n"
             f"  agent{agent_num}:\n"
-            f"    type: random  # or 'alphazero'"
+            f"    type: {valid_types[0] if valid_types else 'your_algorithm'}"
         )
 
 
-def validate_checkpoint_exists(checkpoint_dir: Path, agent_num: int) -> None:
+def validate_checkpoint_exists(checkpoint_dir: Path, agent_num: int, agent_type: str) -> None:
     """
     Validate that checkpoint directory and required files exist.
 
     Args:
         checkpoint_dir: Path to checkpoint directory
         agent_num: Agent number (1 or 2)
+        agent_type: Agent type (e.g., 'alphazero', 'vanilla_mcts')
 
     Raises:
         ValueError: If checkpoint directory or files don't exist
@@ -195,33 +205,21 @@ def validate_checkpoint_exists(checkpoint_dir: Path, agent_num: int) -> None:
             f"      type: random"
         )
 
-    agent_yaml_path = checkpoint_dir / "agent.yaml"
-    if not agent_yaml_path.exists():
-        raise ValueError(
-            f"Problem: Agent{agent_num} checkpoint missing agent.yaml\n\n"
-            f"Details:\n"
-            f"  Path: {checkpoint_dir}\n"
-            f"  Missing: agent.yaml\n\n"
-            "To fix:\n"
-            "  Ensure this is a valid agent checkpoint directory.\n"
-            "  A valid checkpoint should contain:\n"
-            "    - agent.yaml (agent configuration)\n"
-            "    - model.pt (model weights)"
-        )
-
-    model_path = checkpoint_dir / "model.pt"
-    if not model_path.exists():
-        raise ValueError(
-            f"Problem: Agent{agent_num} checkpoint missing model.pt\n\n"
-            f"Details:\n"
-            f"  Path: {checkpoint_dir}\n"
-            f"  Missing: model.pt\n\n"
-            "To fix:\n"
-            "  Ensure this is a valid agent checkpoint directory.\n"
-            "  A valid checkpoint should contain:\n"
-            "    - agent.yaml (agent configuration)\n"
-            "    - model.pt (model weights)"
-        )
+    # Get required checkpoint files from algorithm metadata
+    metadata = AlgorithmRegistry.get_metadata(agent_type)
+    for required_file in metadata.checkpoint_files:
+        file_path = checkpoint_dir / required_file
+        if not file_path.exists():
+            raise ValueError(
+                f"Problem: Agent{agent_num} checkpoint missing {required_file}\n\n"
+                f"Details:\n"
+                f"  Path: {checkpoint_dir}\n"
+                f"  Missing: {required_file}\n\n"
+                "To fix:\n"
+                f"  Ensure this is a valid {agent_type} checkpoint directory.\n"
+                f"  A valid {agent_type} checkpoint should contain:\n"
+                f"    {', '.join(metadata.checkpoint_files)}"
+            )
 
 
 def load_match_config(config_path: Path) -> MatchConfig:
@@ -295,22 +293,23 @@ def load_match_config(config_path: Path) -> MatchConfig:
         validate_agent_type(agent_type, agent_num)
 
         checkpoint_dir = None
-        if agent_type == 'alphazero':
+        metadata = AlgorithmRegistry.get_metadata(agent_type)
+        if metadata.requires_checkpoint:
             checkpoint_dir_str = agent_dict.get('checkpoint_dir')
             if not checkpoint_dir_str:
                 raise ValueError(
                     f"Problem: Missing checkpoint_dir for agent{agent_num}\n\n"
                     "Details:\n"
-                    "  AlphaZero agents require a checkpoint directory.\n\n"
+                    f"  {agent_type} agents require a checkpoint directory.\n\n"
                     "To fix:\n"
                     f"  Add checkpoint_dir to agent{agent_num} config:\n\n"
                     f"  agent{agent_num}:\n"
-                    f"    type: alphazero\n"
+                    f"    type: {agent_type}\n"
                     f"    checkpoint_dir: saved_agents/YOUR_CHECKPOINT"
                 )
 
             checkpoint_dir = Path(checkpoint_dir_str)
-            validate_checkpoint_exists(checkpoint_dir, agent_num)
+            validate_checkpoint_exists(checkpoint_dir, agent_num, agent_type)
 
         agent_configs.append((agent_type, checkpoint_dir))
 
@@ -343,19 +342,19 @@ def create_agent(agent_type: str, checkpoint_dir: Optional[Path], game: Game) ->
     Create agent based on type.
 
     Args:
-        agent_type: Agent type ('alphazero' or 'random')
-        checkpoint_dir: Path to checkpoint (required for alphazero)
+        agent_type: Agent type (e.g., 'alphazero', 'vanilla_mcts', 'random')
+        checkpoint_dir: Path to checkpoint (required for algorithms that need it)
         game: Game instance
 
     Returns:
         Agent: Configured agent ready to play
     """
-    if agent_type == 'alphazero':
+    metadata = AlgorithmRegistry.get_metadata(agent_type)
+    if metadata.requires_checkpoint:
         return load_agent_checkpoint(checkpoint_dir)
-    elif agent_type == 'random':
-        return RandomAgent(game=game)
     else:
-        raise ValueError(f"Unknown agent type: {agent_type}")
+        # No checkpoint required = random agent
+        return RandomAgent(game=game)
 
 
 def main() -> None:

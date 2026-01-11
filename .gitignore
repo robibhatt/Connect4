@@ -5,6 +5,8 @@ __pycache__/
 
 .vscode/*
 trained_models/*
+saved_agents/
+.claude/
 
 # C extensions
 *.so

@@ -1,0 +1,20 @@
+# TicTacToe Vanilla MCTS Quick Configuration
+# ==========================================
+# Fast validation for testing the vanilla MCTS implementation
+
+game: tictactoe
+
+algorithm:
+  name: vanilla_mcts
+
+  # Validation
+  num_test_games: 5
+  random_seed: 42
+  verbose: true
+
+  # MCTS - weak but fast for testing
+  num_sims: 100                # Low for quick testing
+  c_exploration: 1.414
+  max_rollout_depth: 50
+  rollout_seed: 42
+  illegal_action_penalty: 1e9

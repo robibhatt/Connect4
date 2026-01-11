@@ -1,0 +1,16 @@
+# Match: AlphaZero vs AlphaZero on TicTacToe
+# Usage: cp scripts/samples/match_tictactoe_alphazero_vs_alphazero.yaml scripts/simulate_match.yaml && python scripts/simulate_match.py
+# Use this to compare two different trained agents
+
+game: tictactoe
+
+match:
+  num_games: 100
+
+agent1:
+  type: alphazero
+  checkpoint_dir: saved_agents/AGENT_1_CHECKPOINT  # Update this path!
+
+agent2:
+  type: alphazero
+  checkpoint_dir: saved_agents/AGENT_2_CHECKPOINT  # Update this path!

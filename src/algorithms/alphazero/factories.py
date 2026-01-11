@@ -12,6 +12,7 @@ from src.games.core.game import Game
 from src.algorithms.alphazero.config import AlphaZeroConfig
 from src.algorithms.alphazero.trainer import Trainer
 from src.algorithms.alphazero.mcts import MCTS
+from src.algorithms.alphazero.agent_config import AlphaZeroAgentConfig
 
 
 def create_alphazero_trainer(
@@ -64,3 +65,25 @@ def create_alphazero_trainer(
     )
 
     return trainer
+
+
+def create_alphazero_agent_config(config: AlphaZeroConfig) -> AlphaZeroAgentConfig:
+    """
+    Create an AlphaZeroAgentConfig from training config.
+
+    Args:
+        config: AlphaZeroConfig used during training
+
+    Returns:
+        AlphaZeroAgentConfig for saving/loading agent
+    """
+    return AlphaZeroAgentConfig(
+        model_class=config.model_class,
+        model_kwargs=config.model_kwargs,
+        num_sims=config.num_sims,
+        c_puct=config.c_puct,
+        dirichlet_alpha=config.dirichlet_alpha,
+        dirichlet_eps=config.dirichlet_eps,
+        illegal_action_penalty=config.illegal_action_penalty,
+        device=config.device,
+    )

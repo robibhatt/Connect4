@@ -2,7 +2,7 @@
 # Run two agents against each other for multiple games
 
 # Game to play
-game: tictactoe  # Options: 'tictactoe' or 'connect4'
+game: connect4  # Options: 'tictactoe' or 'connect4'
 
 # Match settings
 match:
@@ -16,7 +16,8 @@ agent1:
 
 # Agent 2 Configuration
 agent2:
-  type: random  # Options: 'alphazero' or 'random'
+  type: vanilla_mcts  # Options: 'alphazero' or 'random'
+  checkpoint_dir: saved_agents/20260110_171036_tictactoe_VanillaMCTSAgent
   # For AlphaZero agents, add:
   # checkpoint_dir: saved_agents/YOUR_CHECKPOINT_DIR
 

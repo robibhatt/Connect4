@@ -22,6 +22,7 @@ import yaml
 
 from src.agents import RandomAgent, load_agent_checkpoint
 from src.agents.agent import Agent
+from src.algorithms.registry import AlgorithmRegistry
 from src.games.core.game import Game
 from src.games.core.registry import GameRegistry
 from src.games.tictactoe.ui import TicTacToeUI
@@ -131,85 +132,39 @@ def validate_game_exists(game_name: str) -> None:
 
 def validate_agent_type(agent_type: str) -> None:
     """
-    Validate that agent type is valid.
+    Validate that agent type is registered.
 
     Args:
         agent_type: Agent type string
 
     Raises:
-        ValueError: If agent type is invalid
+        ValueError: If agent type is not registered
     """
-    valid_types = ['alphazero', 'random']
+    valid_types = AlgorithmRegistry.get_all_algorithms()
     if agent_type not in valid_types:
         raise ValueError(
-            f"Problem: Invalid agent type '{agent_type}'\n\n"
-            f"Valid types:\n"
-            f"  - alphazero: Trained AlphaZero agent (requires checkpoint_dir)\n"
-            f"  - random: Random move agent (no checkpoint needed)\n\n"
-            "To fix:\n"
-            "  Set agent.type to 'alphazero' or 'random':\n\n"
-            "  agent:\n"
-            "    type: random  # or 'alphazero'"
+            f"Invalid agent type '{agent_type}'. Valid: {', '.join(sorted(valid_types))}"
         )
 
 
-def validate_checkpoint_exists(checkpoint_dir: Path) -> None:
+def validate_checkpoint_exists(checkpoint_dir: Path, agent_type: str) -> None:
     """
     Validate that checkpoint directory and required files exist.
 
     Args:
         checkpoint_dir: Path to checkpoint directory
+        agent_type: Agent type (determines required files via metadata)
 
     Raises:
         ValueError: If checkpoint directory or files don't exist
     """
     if not checkpoint_dir.exists():
-        raise ValueError(
-            f"Problem: Checkpoint directory not found\n\n"
-            f"Details:\n"
-            f"  Path: {checkpoint_dir}\n\n"
-            "This usually means:\n"
-            "  1. You haven't trained an agent yet, or\n"
-            "  2. The checkpoint path in your config is incorrect\n\n"
-            "To fix:\n"
-            "  Option 1: Train an agent first:\n"
-            "    python scripts/train.py scripts/train.yaml\n\n"
-            "  Option 2: Update your config with the correct checkpoint path:\n"
-            "    agent:\n"
-            "      checkpoint_dir: saved_agents/[your_checkpoint_dir]\n\n"
-            "  Option 3: Play against a random agent instead:\n"
-            "    agent:\n"
-            "      type: random\n\n"
-            "For help, see: configs/play/tictactoe_random.yaml"
-        )
+        raise ValueError(f"Checkpoint not found: {checkpoint_dir}")
 
-    agent_yaml_path = checkpoint_dir / "agent.yaml"
-    if not agent_yaml_path.exists():
-        raise ValueError(
-            f"Problem: Checkpoint missing agent.yaml\n\n"
-            f"Details:\n"
-            f"  Path: {checkpoint_dir}\n"
-            f"  Missing: agent.yaml\n\n"
-            "To fix:\n"
-            "  Ensure this is a valid agent checkpoint directory.\n"
-            "  A valid checkpoint should contain:\n"
-            "    - agent.yaml (agent configuration)\n"
-            "    - model.pt (model weights)"
-        )
-
-    model_path = checkpoint_dir / "model.pt"
-    if not model_path.exists():
-        raise ValueError(
-            f"Problem: Checkpoint missing model.pt\n\n"
-            f"Details:\n"
-            f"  Path: {checkpoint_dir}\n"
-            f"  Missing: model.pt\n\n"
-            "To fix:\n"
-            "  Ensure this is a valid agent checkpoint directory.\n"
-            "  A valid checkpoint should contain:\n"
-            "    - agent.yaml (agent configuration)\n"
-            "    - model.pt (model weights)"
-        )
+    metadata = AlgorithmRegistry.get_metadata(agent_type)
+    for required_file in metadata.checkpoint_files:
+        if not (checkpoint_dir / required_file).exists():
+            raise ValueError(f"Checkpoint missing {required_file}: {checkpoint_dir}")
 
 
 def validate_game_match(config_game: str, checkpoint_dir: Path) -> None:
@@ -298,23 +253,14 @@ def load_play_config(config_path: Path) -> PlayConfig:
     # Validate agent type
     validate_agent_type(agent_type)
 
-    # Handle AlphaZero agent
+    # Handle checkpoint-based agents using metadata
     checkpoint_dir = None
-    if agent_type == 'alphazero':
+    metadata = AlgorithmRegistry.get_metadata(agent_type)
+    if metadata.requires_checkpoint:
         if not checkpoint_dir_str:
-            raise ValueError(
-                "Problem: Missing checkpoint_dir for AlphaZero agent\n\n"
-                "Details:\n"
-                "  AlphaZero agents require a checkpoint directory.\n\n"
-                "To fix:\n"
-                "  Add checkpoint_dir to your agent config:\n\n"
-                "  agent:\n"
-                "    type: alphazero\n"
-                "    checkpoint_dir: saved_agents/YOUR_CHECKPOINT"
-            )
-
+            raise ValueError(f"{agent_type} requires checkpoint_dir")
         checkpoint_dir = Path(checkpoint_dir_str)
-        validate_checkpoint_exists(checkpoint_dir)
+        validate_checkpoint_exists(checkpoint_dir, agent_type)
         validate_game_match(game_name, checkpoint_dir)
 
     return PlayConfig(
@@ -343,7 +289,7 @@ def create_game(game_name: str) -> Game:
 
 def create_agent(config: PlayConfig, game: Game) -> Agent:
     """
-    Create agent based on config type.
+    Create agent based on config type using AlgorithmRegistry metadata.
 
     Args:
         config: Play configuration
@@ -352,12 +298,10 @@ def create_agent(config: PlayConfig, game: Game) -> Agent:
     Returns:
         Agent: Configured agent ready to play
     """
-    if config.agent_type == 'alphazero':
+    metadata = AlgorithmRegistry.get_metadata(config.agent_type)
+    if metadata.requires_checkpoint:
         return load_agent_checkpoint(config.checkpoint_dir)
-    elif config.agent_type == 'random':
-        return RandomAgent(game=game)
-    else:
-        raise ValueError(f"Unknown agent type: {config.agent_type}")
+    return RandomAgent(game=game)
 
 
 def print_game_info(config: PlayConfig, agent: Agent, game: Game) -> None:
