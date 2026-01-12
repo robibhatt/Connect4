@@ -1,17 +1,17 @@
 # Train AlphaZero on TicTacToe (Quick ~5 min)
 # Usage: cp scripts/samples/train_tictactoe_alphazero_quick.yaml scripts/train.yaml && python scripts/train.py
+# Quick settings - weak agent but fast training for testing
 
 game: tictactoe
 
 algorithm:
   name: alphazero
-  device: cpu  # Change to 'mps' (Apple) or 'cuda' (NVIDIA) for GPU
+  device: cpu
 
   model:
     class: TicTacToeMLPNet
     hidden: 64
 
-  # Quick settings - weak agent but fast training
   iterations: 50
   games_per_iteration: 8
   batch_size: 64

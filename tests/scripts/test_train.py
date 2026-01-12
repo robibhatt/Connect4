@@ -41,14 +41,18 @@ def alphazero_config_yaml():
 
 @pytest.fixture
 def vanilla_mcts_config_yaml():
-    """Sample Vanilla MCTS YAML config (no model section)"""
+    """Sample Vanilla MCTS YAML config (no model section) with nested structure"""
     return {
         'game': 'tictactoe',
         'algorithm': {
             'name': 'vanilla_mcts',
-            'num_sims': 100,
-            'c_exploration': 1.414,
-            'num_test_games': 5
+            'core': {
+                'num_sims': 100,
+                'c_exploration': 1.414,
+            },
+            'trainer': {
+                'num_test_games': 5,
+            }
         }
     }
 
@@ -109,7 +113,7 @@ class TestLoadConfig:
         game_name, algo_name, config, full_config = load_config(config_file)
 
         assert isinstance(config, VanillaMCTSConfig)
-        assert config.num_sims == 100
+        assert config.core.num_sims == 100
 
     def test_load_config_vanilla_mcts_no_model_required(self, vanilla_mcts_config_yaml, temp_config_file):
         """load_config should NOT require model section for vanilla_mcts"""
@@ -202,13 +206,14 @@ class TestAgentConfigFactory:
         """Registry should provide agent config factory for vanilla_mcts"""
         from src.algorithms.registry import AlgorithmRegistry
         from src.algorithms.vanilla_mcts.config import VanillaMCTSConfig
+        from src.algorithms.vanilla_mcts.mcts import MCTSConfig
         from src.algorithms.vanilla_mcts import VanillaMCTSAgentConfig
 
         factory = AlgorithmRegistry.get_agent_config_factory('vanilla_mcts')
         assert callable(factory)
 
-        # Test that factory produces correct type
-        config = VanillaMCTSConfig(num_sims=100)
+        # Test that factory produces correct type with composed config
+        config = VanillaMCTSConfig(core=MCTSConfig(num_sims=100))
         agent_config = factory(config)
         assert isinstance(agent_config, VanillaMCTSAgentConfig)
 

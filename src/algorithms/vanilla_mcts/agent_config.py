@@ -1,43 +1,40 @@
 """
 Configuration for Vanilla MCTS agents.
 
-Contains all parameters needed to reconstruct a Vanilla MCTS agent from checkpoint.
+Uses composition: embeds MCTSConfig rather than duplicating fields.
 """
 
 from __future__ import annotations
 from dataclasses import dataclass, asdict
-from typing import Dict, Any
+from typing import Any
 
 from src.agents.config import AgentConfig
+from src.algorithms.vanilla_mcts.mcts import MCTSConfig
 
 
 @dataclass
 class VanillaMCTSAgentConfig(AgentConfig):
     """
-    Configuration for Vanilla MCTS agents.
+    Configuration for Vanilla MCTS agents using composition.
 
-    Contains:
-    - MCTS hyperparameters
-    - Device configuration (kept for consistency)
-
-    NO model information needed (pure algorithmic approach).
+    Embeds MCTSConfig to avoid field duplication. Adding a new parameter
+    to MCTSConfig automatically makes it available here.
     """
 
-    # MCTS config
-    num_sims: int
-    c_exploration: float
-    max_rollout_depth: int | None
-    rollout_seed: int | None
-    illegal_action_penalty: float
-
-    # Device (kept for consistency, but not really used)
+    mcts: MCTSConfig
     device: str = "cpu"
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Serialize config to dict for saving."""
-        return asdict(self)
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to nested dict structure for YAML."""
+        return {
+            "mcts": asdict(self.mcts),
+            "device": self.device,
+        }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> VanillaMCTSAgentConfig:
-        """Deserialize config from dict."""
-        return cls(**data)
+    def from_dict(cls, data: dict[str, Any]) -> VanillaMCTSAgentConfig:
+        """Deserialize from nested dict structure."""
+        mcts_data = data.get("mcts", {})
+        mcts = MCTSConfig(**mcts_data)
+        device = data.get("device", "cpu")
+        return cls(mcts=mcts, device=device)

@@ -1,6 +1,6 @@
 # Match: Vanilla MCTS vs AlphaZero on TicTacToe
 # Usage: cp scripts/samples/match_vanilla_mcts_vs_alphazero.yaml scripts/simulate_match.yaml && python scripts/simulate_match.py
-# Compare pure MCTS vs neural network guided MCTS
+# Compare pure MCTS vs neural network guided MCTS - update both checkpoint_dir paths
 
 game: tictactoe
 
@@ -9,8 +9,8 @@ match:
 
 agent1:
   type: vanilla_mcts
-  checkpoint_dir: saved_agents/YOUR_VANILLA_MCTS_CHECKPOINT  # Update this path!
+  checkpoint_dir: saved_agents/YOUR_VANILLA_MCTS_CHECKPOINT
 
 agent2:
   type: alphazero
-  checkpoint_dir: saved_agents/YOUR_ALPHAZERO_CHECKPOINT  # Update this path!
+  checkpoint_dir: saved_agents/YOUR_ALPHAZERO_CHECKPOINT

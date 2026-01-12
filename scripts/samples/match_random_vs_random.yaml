@@ -1,8 +1,9 @@
 # Match: Random vs Random (sanity check)
 # Usage: cp scripts/samples/match_random_vs_random.yaml scripts/simulate_match.yaml && python scripts/simulate_match.py
-# Useful for verifying the game logic - should be roughly 50/50 with some draws
+# Useful for verifying game logic - should be roughly 50/50 with some draws
+# Change game to 'connect4' if desired
 
-game: tictactoe  # Change to 'connect4' if desired
+game: tictactoe
 
 match:
   num_games: 100

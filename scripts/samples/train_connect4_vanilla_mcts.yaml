@@ -7,12 +7,10 @@ game: connect4
 algorithm:
   name: vanilla_mcts
 
-  # Validation settings
   num_test_games: 10
   random_seed: 42
   verbose: true
 
-  # MCTS settings (more sims needed for Connect4's larger game tree)
   num_sims: 1000
   c_exploration: 1.414
   max_rollout_depth: 100

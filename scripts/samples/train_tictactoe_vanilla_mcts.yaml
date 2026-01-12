@@ -7,14 +7,12 @@ game: tictactoe
 algorithm:
   name: vanilla_mcts
 
-  # Validation settings
   num_test_games: 10
   random_seed: 42
   verbose: true
 
-  # MCTS settings
   num_sims: 500
-  c_exploration: 1.414  # sqrt(2) is theoretically optimal for UCB1
+  c_exploration: 1.414
   max_rollout_depth: 50
   rollout_seed: 42
   illegal_action_penalty: 1000000000.0

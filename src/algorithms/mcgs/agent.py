@@ -1,4 +1,4 @@
-"""Generic Vanilla MCTS agent that works with any game."""
+"""Generic MCGS agent that works with any game."""
 
 from __future__ import annotations
 from pathlib import Path
@@ -9,33 +9,33 @@ import yaml
 from src.games.core.game import Game, State
 from src.agents.agent import Agent
 from src.agents.checkpointable import CheckpointableAgent
-from src.algorithms.vanilla_mcts.mcts import VanillaMCTS, MCTSConfig
+from src.algorithms.mcgs.mcgs import MCGS, MCGSCoreConfig
 
 
-class VanillaMCTSAgent(Agent, CheckpointableAgent):
+class MCGSAgent(Agent, CheckpointableAgent):
     """
-    Generic Vanilla MCTS agent that works with any game.
+    Generic MCGS agent that works with any game.
 
-    Wraps a VanillaMCTS instance for move selection.
+    Wraps a MCGS instance for move selection.
     Can be saved to and loaded from checkpoints.
 
     Key difference from AlphaZeroAgent: No model.pt file needed!
     """
 
-    def __init__(self, game: Game, mcts: VanillaMCTS):
+    def __init__(self, game: Game, mcgs: MCGS):
         """
-        Initialize agent with game and MCTS.
+        Initialize agent with game and MCGS.
 
         Args:
             game: Game instance
-            mcts: Pre-configured VanillaMCTS instance
+            mcgs: Pre-configured MCGS instance
         """
         super().__init__(game)
-        self.mcts = mcts
+        self.mcgs = mcgs
 
     def act(self, s: State) -> int:
         """
-        Choose action via MCTS search.
+        Choose action via MCGS search.
 
         Args:
             s: Current game state
@@ -43,17 +43,17 @@ class VanillaMCTSAgent(Agent, CheckpointableAgent):
         Returns:
             Action index
         """
-        return self.mcts.play_move(s)
+        return self.mcgs.play_move(s)
 
     def start(self) -> None:
-        """Clear MCTS tree at game start."""
-        self.mcts.clear()
+        """Clear MCGS tree at game start."""
+        self.mcgs.clear()
 
     def to_checkpoint(self, save_dir: Path) -> None:
         """
         Save agent to checkpoint directory.
 
-        For Vanilla MCTS, there's no model to save!
+        For MCGS, there's no model to save!
         Agent metadata (game, config) is handled by checkpoint_utils.
 
         This method intentionally does nothing - no model.pt file created.
@@ -71,14 +71,14 @@ class VanillaMCTSAgent(Agent, CheckpointableAgent):
         checkpoint_dir: Path,
         game: Game,
         device: Optional[str] = None
-    ) -> VanillaMCTSAgent:
+    ) -> MCGSAgent:
         """
         Load agent from checkpoint directory.
 
         Args:
             checkpoint_dir: Path to saved agent
             game: Game instance
-            device: Optional device (ignored for Vanilla MCTS, kept for API consistency)
+            device: Optional device (ignored for MCGS, kept for API consistency)
 
         Returns:
             Loaded agent ready to play
@@ -92,17 +92,17 @@ class VanillaMCTSAgent(Agent, CheckpointableAgent):
         with (checkpoint_dir / "agent.yaml").open('r') as f:
             agent_yaml = yaml.safe_load(f)
 
-        # Extract MCTS configuration (nested structure from composed config)
-        agent_config_dict = agent_yaml['mcts']
-        mcts_core_dict = agent_config_dict['mcts']
+        # Extract MCGS configuration (nested structure from composed config)
+        agent_config_dict = agent_yaml['mcgs']
+        mcgs_core_dict = agent_config_dict['mcgs']
 
-        # Create MCTS config
-        mcts_cfg = MCTSConfig(**mcts_core_dict)
+        # Create MCGS config
+        mcgs_cfg = MCGSCoreConfig(**mcgs_core_dict)
 
-        # Create MCTS instance
-        mcts = VanillaMCTS(
+        # Create MCGS instance
+        mcgs = MCGS(
             game=game,
-            cfg=mcts_cfg
+            cfg=mcgs_cfg
         )
 
-        return cls(game=game, mcts=mcts)
+        return cls(game=game, mcgs=mcgs)

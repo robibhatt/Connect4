@@ -1,17 +1,17 @@
 # Train AlphaZero on Connect4 (Full ~2-4 hours)
 # Usage: cp scripts/samples/train_connect4_alphazero_full.yaml scripts/train.yaml && python scripts/train.py
+# Full training - Connect4 is harder than TicTacToe and requires more iterations
 
 game: connect4
 
 algorithm:
   name: alphazero
-  device: mps  # Change to 'cpu' or 'cuda' based on your hardware
+  device: mps
 
   model:
     class: Connect4MLPNet
     hidden: 256
 
-  # Full training - stronger agent (Connect4 is harder than TicTacToe)
   iterations: 800
   games_per_iteration: 50
   batch_size: 256

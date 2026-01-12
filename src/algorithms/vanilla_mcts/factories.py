@@ -26,7 +26,7 @@ def create_vanilla_mcts_trainer(
     Args:
         game: Game instance
         model: Ignored (no model needed for Vanilla MCTS)
-        config: VanillaMCTSConfig with all parameters
+        config: VanillaMCTSConfig with embedded core and trainer configs
 
     Returns:
         Trainer instance ready for "training" (validation)
@@ -34,27 +34,22 @@ def create_vanilla_mcts_trainer(
     Example:
         game = TicTacToe()
         config = VanillaMCTSConfig(
-            num_sims=1000,
-            c_exploration=1.414,
+            core=MCTSConfig(num_sims=1000),
+            trainer=TrainerArgs(verbose=True),
         )
         trainer = create_vanilla_mcts_trainer(game, None, config)
         trainer.run()
     """
-    # Extract legacy configs for backward compatibility
-    trainer_args = config.to_trainer_args()
-    mcts_config = config.to_mcts_config()
-
-    # Create MCTS instance (no model needed!)
+    # Use embedded configs directly (no extraction needed with composition)
     mcts = VanillaMCTS(
         game=game,
-        cfg=mcts_config
+        cfg=config.core
     )
 
-    # Create Trainer instance
     trainer = Trainer(
         game=game,
         mcts=mcts,
-        args=trainer_args
+        args=config.trainer
     )
 
     return trainer
@@ -70,11 +65,8 @@ def create_vanilla_mcts_agent_config(config: VanillaMCTSConfig) -> VanillaMCTSAg
     Returns:
         VanillaMCTSAgentConfig for saving/loading agent
     """
+    # Pass embedded core config directly (no field-by-field extraction)
     return VanillaMCTSAgentConfig(
-        num_sims=config.num_sims,
-        c_exploration=config.c_exploration,
-        max_rollout_depth=config.max_rollout_depth,
-        rollout_seed=config.rollout_seed,
-        illegal_action_penalty=config.illegal_action_penalty,
-        device=config.device,
+        mcts=config.core,
+        device=config.trainer.device,
     )

@@ -1,17 +1,17 @@
 # Train AlphaZero on Connect4 (Quick ~10-15 min)
 # Usage: cp scripts/samples/train_connect4_alphazero_quick.yaml scripts/train.yaml && python scripts/train.py
+# Quick settings - weak agent but fast training for testing
 
 game: connect4
 
 algorithm:
   name: alphazero
-  device: cpu  # Change to 'mps' (Apple) or 'cuda' (NVIDIA) for GPU
+  device: cpu
 
   model:
     class: Connect4MLPNet
     hidden: 128
 
-  # Quick settings - weak agent but fast training
   iterations: 50
   games_per_iteration: 8
   batch_size: 64

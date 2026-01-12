@@ -1,7 +1,7 @@
 """
-Vanilla MCTS Trainer - minimal training (just hyperparameter validation).
+MCGS Trainer - minimal training (just hyperparameter validation).
 
-Since Vanilla MCTS has no learning, the "trainer" just validates configuration
+Since MCGS has no learning, the "trainer" just validates configuration
 and optionally runs test games to verify the agent works.
 """
 
@@ -10,16 +10,16 @@ from __future__ import annotations
 import numpy as np
 
 from src.games.core.game import Game
-from src.algorithms.vanilla_mcts.mcts import VanillaMCTS
+from src.algorithms.mcgs.mcgs import MCGS
 from src.algorithms.shared.trainer_args import TrainerArgs
 from src.agents.checkpointable import CheckpointableAgent
 
 
 class Trainer:
     """
-    Vanilla MCTS trainer.
+    MCGS trainer.
 
-    Since Vanilla MCTS has no training phase (no learning),
+    Since MCGS has no training phase (no learning),
     this class just validates the configuration and optionally
     runs test games to verify the agent works correctly.
     """
@@ -27,7 +27,7 @@ class Trainer:
     def __init__(
         self,
         game: Game,
-        mcts: VanillaMCTS,
+        mcgs: MCGS,
         args: TrainerArgs
     ):
         """
@@ -35,11 +35,11 @@ class Trainer:
 
         Args:
             game: Game instance
-            mcts: VanillaMCTS instance
+            mcgs: MCGS instance
             args: Trainer arguments
         """
         self.game = game
-        self.mcts = mcts
+        self.mcgs = mcgs
         self.args = args
 
         if args.random_seed is not None:
@@ -49,7 +49,7 @@ class Trainer:
         """
         Run "training" (actually just validation/testing).
 
-        For Vanilla MCTS, there's no training to do!
+        For MCGS, there's no training to do!
         Instead, we:
         1. Validate configuration
         2. Run test games to verify agent works
@@ -57,11 +57,11 @@ class Trainer:
         """
         if self.args.verbose:
             print(f"\n{'='*60}")
-            print("Vanilla MCTS Configuration Validation")
+            print("MCGS Configuration Validation")
             print(f"{'='*60}")
-            print(f"Simulations per move: {self.mcts.cfg.num_sims}")
-            print(f"Exploration constant: {self.mcts.cfg.c_exploration}")
-            print(f"Max rollout depth: {self.mcts.cfg.max_rollout_depth or 'Unlimited'}")
+            print(f"Simulations per move: {self.mcgs.cfg.num_sims}")
+            print(f"Exploration constant: {self.mcgs.cfg.c_exploration}")
+            print(f"Max rollout depth: {self.mcgs.cfg.max_rollout_depth or 'Unlimited'}")
             print(f"{'='*60}\n")
 
         # Run test games
@@ -84,7 +84,7 @@ class Trainer:
         game_lengths = []
 
         for game_idx in range(self.args.num_test_games):
-            self.mcts.clear()
+            self.mcgs.clear()
             s = self.game.reset()
             moves = 0
 
@@ -93,8 +93,8 @@ class Trainer:
                 if done:
                     break
 
-                # Get action from MCTS
-                a = self.mcts.play_move(s, deterministic=True)
+                # Get action from MCGS
+                a = self.mcgs.play_move(s, deterministic=True)
                 s = self.game.next_state(s, a)
                 moves += 1
 
@@ -112,10 +112,10 @@ class Trainer:
 
     def create_agent(self) -> CheckpointableAgent:
         """
-        Create agent from MCTS instance.
+        Create agent from MCGS instance.
 
         Returns:
             Agent instance ready to be saved or used for play
         """
-        from src.algorithms.vanilla_mcts.agent import VanillaMCTSAgent
-        return VanillaMCTSAgent(game=self.game, mcts=self.mcts)
+        from src.algorithms.mcgs.agent import MCGSAgent
+        return MCGSAgent(game=self.game, mcgs=self.mcgs)

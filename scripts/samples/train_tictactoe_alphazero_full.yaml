@@ -1,17 +1,17 @@
 # Train AlphaZero on TicTacToe (Full ~30-60 min)
 # Usage: cp scripts/samples/train_tictactoe_alphazero_full.yaml scripts/train.yaml && python scripts/train.py
+# Full training - produces a strong agent
 
 game: tictactoe
 
 algorithm:
   name: alphazero
-  device: mps  # Change to 'cpu' or 'cuda' based on your hardware
+  device: mps
 
   model:
     class: TicTacToeMLPNet
     hidden: 128
 
-  # Full training - stronger agent
   iterations: 400
   games_per_iteration: 25
   batch_size: 128

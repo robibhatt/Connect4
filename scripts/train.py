@@ -68,8 +68,11 @@ def load_config(config_path: Path) -> Tuple[str, str, Any, dict]:
             config_params['model_class'] = model_class_name
             config_params['model_kwargs'] = model_config  # Remaining fields are kwargs
 
-    # Instantiate config
-    config = ConfigClass(**config_params)
+    # Instantiate config - use from_dict if available (for composed configs)
+    if hasattr(ConfigClass, 'from_dict'):
+        config = ConfigClass.from_dict(config_params)
+    else:
+        config = ConfigClass(**config_params)
 
     return game_name, algo_name, config, config_dict
 
