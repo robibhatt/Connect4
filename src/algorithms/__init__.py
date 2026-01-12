@@ -2,5 +2,5 @@
 Machine learning algorithms for game AI.
 
 Currently supports:
-- AlphaZero: Self-play reinforcement learning with MCTS
+- Vanilla MCTS: Monte Carlo Tree Search with random rollouts
 """

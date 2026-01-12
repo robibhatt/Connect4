@@ -9,7 +9,7 @@ from typing import Tuple, Optional
 
 class GameNet(nn.Module):
     """
-    Abstract base class for AlphaZero-style game neural networks.
+    Abstract base class for game neural networks.
 
     All game-specific models should inherit from this class to ensure
     consistent interface for the training pipeline.

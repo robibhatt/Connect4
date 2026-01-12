@@ -36,30 +36,6 @@ def mock_checkpoint_dir(tmp_path):
     return checkpoint_dir
 
 
-@pytest.fixture
-def mock_alphazero_checkpoint_dir(tmp_path):
-    """Create a mock alphazero checkpoint with agent.yaml AND model.pt"""
-    checkpoint_dir = tmp_path / "alphazero_checkpoint"
-    checkpoint_dir.mkdir()
-
-    agent_yaml = {
-        'agent_class': 'AlphaZeroAgent',
-        'game': 'tictactoe',
-        'model': {
-            'class': 'TicTacToeMLPNet',
-            'kwargs': {'hidden': 64}
-        }
-    }
-
-    with open(checkpoint_dir / "agent.yaml", 'w') as f:
-        yaml.dump(agent_yaml, f)
-
-    # Create dummy model.pt
-    (checkpoint_dir / "model.pt").touch()
-
-    return checkpoint_dir
-
-
 # ===== Registry-Driven Validation Tests =====
 
 class TestHumanPlayUsesRegistries:
@@ -100,24 +76,6 @@ class TestCheckpointValidation:
 
         # Should NOT raise for vanilla_mcts
         validate_checkpoint_exists(mock_checkpoint_dir, 'vanilla_mcts')
-
-    def test_alphazero_requires_model(self, mock_checkpoint_dir):
-        """alphazero checkpoint should require model.pt (uses metadata)."""
-        from scripts.human_play import validate_checkpoint_exists
-
-        # Checkpoint has agent.yaml but NO model.pt
-        assert not (mock_checkpoint_dir / "model.pt").exists()
-
-        # Should raise for alphazero
-        with pytest.raises(ValueError, match="model.pt"):
-            validate_checkpoint_exists(mock_checkpoint_dir, 'alphazero')
-
-    def test_alphazero_with_model_passes(self, mock_alphazero_checkpoint_dir):
-        """alphazero checkpoint with model.pt should pass."""
-        from scripts.human_play import validate_checkpoint_exists
-
-        # Should NOT raise
-        validate_checkpoint_exists(mock_alphazero_checkpoint_dir, 'alphazero')
 
     def test_missing_agent_yaml_raises(self, tmp_path):
         """Checkpoint missing agent.yaml should raise."""

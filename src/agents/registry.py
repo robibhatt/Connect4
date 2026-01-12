@@ -16,20 +16,20 @@ class AgentRegistry:
     """
     SINGLE centralized registry for ALL agents from ALL games.
 
-    Supports multiple agent types per game (e.g., TicTacToeAlphaZeroAgent, TicTacToeRandomAgent).
+    Supports multiple agent types per game (e.g., TicTacToeRandomAgent, TicTacToeMCTSAgent).
 
     Naming convention: {Game}{Algorithm}Agent
     Examples:
-        - TicTacToeAlphaZeroAgent -> game: tictactoe, algorithm: AlphaZero
-        - Connect4AlphaZeroAgent -> game: connect4, algorithm: AlphaZero
+        - TicTacToeRandomAgent -> game: tictactoe, algorithm: Random
+        - Connect4MCTSAgent -> game: connect4, algorithm: MCTS
 
     Usage:
         # Register an agent (auto-extracts game name from class name)
-        AgentRegistry.register(TicTacToeAlphaZeroAgent)
+        AgentRegistry.register(TicTacToeRandomAgent)
 
         # Get agent class by full class name
-        agent_cls = AgentRegistry.get_agent('TicTacToeAlphaZeroAgent')
-        agent = agent_cls(game=game, mcts=mcts)
+        agent_cls = AgentRegistry.get_agent('TicTacToeRandomAgent')
+        agent = agent_cls(game=game)
 
         # Get all agents for a game
         agents = AgentRegistry.get_agents_for_game('tictactoe')
@@ -47,7 +47,7 @@ class AgentRegistry:
         Register an agent class (auto-extracts game name from class name).
 
         Expects agent class names in format: {Game}{Algorithm}Agent
-        E.g., TicTacToeAlphaZeroAgent -> extracts 'tictactoe'
+        E.g., TicTacToeRandomAgent -> extracts 'tictactoe'
 
         Args:
             agent_class: Agent class to register
@@ -59,8 +59,8 @@ class AgentRegistry:
 
         # Extract game name from class name
         # Pattern: {Game}{Algorithm}Agent -> extract {Game}
-        # E.g., TicTacToeAlphaZeroAgent -> TicTacToe
-        # Game can contain digits (Connect4), Algorithm is mixed case (AlphaZero, Random, etc.)
+        # E.g., TicTacToeRandomAgent -> TicTacToe
+        # Game can contain digits (Connect4), Algorithm is mixed case (Random, MCTS, etc.)
         match = re.match(
             r'^([A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+)*)([A-Z][A-Za-z0-9]+)Agent$',
             agent_class_name
@@ -68,7 +68,7 @@ class AgentRegistry:
         if not match:
             raise ValueError(
                 f"Agent class name '{agent_class_name}' does not follow pattern "
-                f"{{Game}}{{Algorithm}}Agent (e.g., TicTacToeAlphaZeroAgent)"
+                f"{{Game}}{{Algorithm}}Agent (e.g., TicTacToeRandomAgent)"
             )
 
         game_name_camel = match.group(1)  # E.g., "TicTacToe" or "Connect4"
@@ -98,7 +98,7 @@ class AgentRegistry:
         Get the agent class by full class name.
 
         Args:
-            agent_class_name: Full agent class name (e.g., 'TicTacToeAlphaZeroAgent')
+            agent_class_name: Full agent class name (e.g., 'VanillaMCTSAgent')
 
         Returns:
             Agent class
@@ -126,7 +126,7 @@ class AgentRegistry:
             game_name: Game identifier (e.g., 'tictactoe')
 
         Returns:
-            List of agent class names (e.g., ['TicTacToeAlphaZeroAgent', 'TicTacToeRandomAgent'])
+            List of agent class names (e.g., ['TicTacToeRandomAgent', 'TicTacToeMCTSAgent'])
         """
         # Lazy registration attempt
         cls._ensure_registered(game_name)
@@ -139,20 +139,13 @@ class AgentRegistry:
     def _ensure_registered(cls, game_name: str) -> None:
         """Ensure a game's agents are registered (lazy registration by game name)."""
         # No game-specific agents to register anymore
-        # AlphaZeroAgent is generic and works with all games
+        # VanillaMCTSAgent is generic and works with all games
         pass
 
     @classmethod
     def _ensure_registered_by_class_name(cls, agent_class_name: str) -> None:
         """Ensure an agent is registered (lazy registration by agent class name)."""
-        if agent_class_name == 'AlphaZeroAgent':
-            try:
-                from src.algorithms.alphazero import AlphaZeroAgent
-                if 'AlphaZeroAgent' not in cls._registry:
-                    cls._registry['AlphaZeroAgent'] = AlphaZeroAgent
-            except (ImportError, ValueError):
-                pass
-        elif agent_class_name == 'VanillaMCTSAgent':
+        if agent_class_name == 'VanillaMCTSAgent':
             try:
                 from src.algorithms.vanilla_mcts import VanillaMCTSAgent
                 if 'VanillaMCTSAgent' not in cls._registry:
@@ -174,14 +167,6 @@ class AgentRegistry:
 # Auto-register known agents
 def _auto_register():
     """Automatically register all known agents."""
-    # Register the generic AlphaZeroAgent
-    try:
-        from src.algorithms.alphazero import AlphaZeroAgent
-        if 'AlphaZeroAgent' not in AgentRegistry._registry:
-            AgentRegistry._registry['AlphaZeroAgent'] = AlphaZeroAgent
-    except ImportError:
-        pass
-
     # Register the generic VanillaMCTSAgent
     try:
         from src.algorithms.vanilla_mcts import VanillaMCTSAgent

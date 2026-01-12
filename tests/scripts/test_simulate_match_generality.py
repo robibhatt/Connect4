@@ -40,14 +40,12 @@ class TestCheckpointValidationUsesMetadata:
         random_meta = AlgorithmRegistry.get_metadata('random')
         assert random_meta.requires_checkpoint is False
 
-        # AlphaZero and VanillaMCTS should require checkpoint
-        az_meta = AlgorithmRegistry.get_metadata('alphazero')
-        assert az_meta.requires_checkpoint is True
+        # VanillaMCTS should require checkpoint
+        vmcts_meta = AlgorithmRegistry.get_metadata('vanilla_mcts')
+        assert vmcts_meta.requires_checkpoint is True
 
     def test_checkpoint_files_from_metadata(self):
         """Required checkpoint files should come from metadata."""
-        az_meta = AlgorithmRegistry.get_metadata('alphazero')
-        assert 'model.pt' in az_meta.checkpoint_files
-
         vmcts_meta = AlgorithmRegistry.get_metadata('vanilla_mcts')
         assert 'model.pt' not in vmcts_meta.checkpoint_files
+        assert 'agent.yaml' in vmcts_meta.checkpoint_files

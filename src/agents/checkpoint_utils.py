@@ -17,14 +17,14 @@ from src.agents.agent import Agent
 from src.games.core.registry import GameRegistry
 
 if TYPE_CHECKING:
-    from src.algorithms.alphazero import AlphaZeroAgentConfig
+    from src.algorithms.vanilla_mcts import VanillaMCTSAgentConfig
 
 
 def save_agent_checkpoint(
     agent: CheckpointableAgent,
     agent_class_name: str,
     game_name: str,
-    config: AlphaZeroAgentConfig,
+    config: VanillaMCTSAgentConfig,
     training_config: Optional[Dict] = None,
     root_dir: str = "saved_agents"
 ) -> Path:
@@ -55,10 +55,6 @@ def save_agent_checkpoint(
     # Delegate to agent's checkpoint method (saves model.pt)
     agent.to_checkpoint(save_dir)
 
-    # Map legacy class names to modern name for new checkpoints
-    if agent_class_name in ['TicTacToeAlphaZeroAgent', 'Connect4AlphaZeroAgent']:
-        agent_class_name = 'AlphaZeroAgent'
-
     # Build agent.yaml conditionally based on config type
     agent_yaml = {
         'agent_class': agent_class_name,
@@ -67,27 +63,20 @@ def save_agent_checkpoint(
         'device': config.device,
     }
 
-    # Add model section only if config has model fields (AlphaZero)
+    # Add model section only if config has model fields
     if hasattr(config, 'model_class') and hasattr(config, 'model_kwargs'):
         agent_yaml['model'] = {
             'class': config.model_class,
             'kwargs': config.model_kwargs
         }
 
-    # Build MCTS section (supports both AlphaZero and Vanilla MCTS)
+    # Build MCTS section
     mcts_config = {}
     # Common fields
     if hasattr(config, 'num_sims'):
         mcts_config['num_sims'] = config.num_sims
     if hasattr(config, 'illegal_action_penalty'):
         mcts_config['illegal_action_penalty'] = config.illegal_action_penalty
-    # AlphaZero fields
-    if hasattr(config, 'c_puct'):
-        mcts_config['c_puct'] = config.c_puct
-    if hasattr(config, 'dirichlet_alpha'):
-        mcts_config['dirichlet_alpha'] = config.dirichlet_alpha
-    if hasattr(config, 'dirichlet_eps'):
-        mcts_config['dirichlet_eps'] = config.dirichlet_eps
     # Vanilla MCTS fields
     if hasattr(config, 'c_exploration'):
         mcts_config['c_exploration'] = config.c_exploration

@@ -39,15 +39,15 @@ class AlgorithmRegistry:
 
     Usage:
         # Get config class
-        ConfigClass = AlgorithmRegistry.get_config_class('alphazero')
+        ConfigClass = AlgorithmRegistry.get_config_class('vanilla_mcts')
         config = ConfigClass(**yaml_dict)
 
         # Get trainer factory
-        factory = AlgorithmRegistry.get_trainer_factory('alphazero')
+        factory = AlgorithmRegistry.get_trainer_factory('vanilla_mcts')
         trainer = factory(game, model, config)
 
         # Get agent config factory
-        agent_config_factory = AlgorithmRegistry.get_agent_config_factory('alphazero')
+        agent_config_factory = AlgorithmRegistry.get_agent_config_factory('vanilla_mcts')
         agent_config = agent_config_factory(config)
 
         # Register new algorithm
@@ -84,7 +84,7 @@ class AlgorithmRegistry:
         Register an algorithm.
 
         Args:
-            algorithm_name: Unique algorithm identifier (e.g., 'alphazero')
+            algorithm_name: Unique algorithm identifier (e.g., 'vanilla_mcts')
             config_class: Config dataclass for this algorithm (None for pseudo-algorithms)
             trainer_factory: Factory function (game, model, config) -> trainer (None for pseudo-algorithms)
             agent_config_factory: Factory function (config) -> agent_config (optional)
@@ -130,7 +130,7 @@ class AlgorithmRegistry:
             algorithm_name: Algorithm identifier
 
         Returns:
-            Config class (e.g., AlphaZeroConfig)
+            Config class (e.g., VanillaMCTSConfig)
 
         Raises:
             KeyError: If algorithm not registered
@@ -269,22 +269,7 @@ class AlgorithmRegistry:
         cls._discover_algorithms()
 
         # Fall back to hardcoded registration for backwards compatibility
-        if algorithm_name == 'alphazero' and algorithm_name not in cls._registry:
-            try:
-                from src.algorithms.alphazero.config import AlphaZeroConfig
-                from src.algorithms.alphazero.factories import (
-                    create_alphazero_trainer,
-                    create_alphazero_agent_config
-                )
-                cls.register(
-                    'alphazero',
-                    AlphaZeroConfig,
-                    create_alphazero_trainer,
-                    create_alphazero_agent_config
-                )
-            except (ImportError, ValueError):
-                pass
-        elif algorithm_name == 'vanilla_mcts' and algorithm_name not in cls._registry:
+        if algorithm_name == 'vanilla_mcts' and algorithm_name not in cls._registry:
             try:
                 from src.algorithms.vanilla_mcts.config import VanillaMCTSConfig
                 from src.algorithms.vanilla_mcts.factories import (

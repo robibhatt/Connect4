@@ -1,9 +1,0 @@
-# Play Connect4 against your trained AlphaZero agent
-# Usage: cp scripts/samples/play_connect4_vs_alphazero.yaml scripts/human_play.yaml && python scripts/human_play.py
-# Update agent.checkpoint_dir to point to your trained agent
-
-game: connect4
-
-agent:
-  type: alphazero
-  checkpoint_dir: saved_agents/YOUR_CHECKPOINT_HERE

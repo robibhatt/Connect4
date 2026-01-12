@@ -174,10 +174,10 @@ def test_multiple_agents_per_game(clean_test_agents_from_registry):
         del AgentRegistry._game_to_agents['testgamemcts']
 
 
-# ===== Generic AlphaZeroAgent Tests =====
+# ===== Generic VanillaMCTSAgent Tests =====
 
-def test_alphazero_agent_registered():
-    """Generic AlphaZeroAgent should be registered."""
-    agent_cls = AgentRegistry.get_agent('AlphaZeroAgent')
+def test_vanilla_mcts_agent_registered():
+    """Generic VanillaMCTSAgent should be registered."""
+    agent_cls = AgentRegistry.get_agent('VanillaMCTSAgent')
     assert agent_cls is not None
-    assert agent_cls.__name__ == 'AlphaZeroAgent'
+    assert agent_cls.__name__ == 'VanillaMCTSAgent'

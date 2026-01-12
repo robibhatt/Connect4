@@ -1,5 +1,5 @@
 """
-Game-Model Registry for AlphaZero training.
+Game-Model Registry for game AI training.
 
 Provides centralized mapping between model class names and model classes,
 enabling dynamic model loading and validation. Supports multiple models per game.

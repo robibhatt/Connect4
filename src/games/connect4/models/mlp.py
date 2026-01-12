@@ -11,7 +11,7 @@ from src.models.registry import ModelRegistry
 
 class Connect4MLPNet(GameNet):
     """
-    MLP neural network for Connect4 AlphaZero training.
+    MLP neural network for Connect4 game playing.
 
     Architecture:
       - Input: [B, 6, 7] canonical board (+1 me, -1 opponent, 0 empty)

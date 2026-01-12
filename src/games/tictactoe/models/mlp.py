@@ -11,7 +11,7 @@ from src.models.registry import ModelRegistry
 
 class TicTacToeMLPNet(GameNet):
     """
-    MLP neural network for TicTacToe AlphaZero training.
+    MLP neural network for TicTacToe game playing.
 
     Architecture:
       - Input: [B, 3, 3] canonical board (+1 me, -1 opponent, 0 empty)

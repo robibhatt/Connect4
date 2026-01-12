@@ -35,40 +35,10 @@ def mock_checkpoint_dir(tmp_path):
     return checkpoint_dir
 
 
-@pytest.fixture
-def mock_alphazero_checkpoint_dir(tmp_path):
-    """Create a mock alphazero checkpoint with agent.yaml AND model.pt"""
-    checkpoint_dir = tmp_path / "alphazero_checkpoint"
-    checkpoint_dir.mkdir()
-
-    agent_yaml = {
-        'agent_class': 'AlphaZeroAgent',
-        'game': 'tictactoe',
-        'model': {
-            'class': 'TicTacToeMLPNet',
-            'kwargs': {'hidden': 64}
-        }
-    }
-
-    with open(checkpoint_dir / "agent.yaml", 'w') as f:
-        yaml.dump(agent_yaml, f)
-
-    # Create dummy model.pt
-    (checkpoint_dir / "model.pt").touch()
-
-    return checkpoint_dir
-
-
 # ===== Agent Type Validation Tests =====
 
 class TestValidateAgentType:
     """Tests for validate_agent_type function"""
-
-    def test_validate_agent_type_accepts_alphazero(self):
-        """alphazero should be a valid agent type"""
-        from scripts.simulate_match import validate_agent_type
-        # Should not raise
-        validate_agent_type('alphazero', 1)
 
     def test_validate_agent_type_accepts_random(self):
         """random should be a valid agent type"""
@@ -104,24 +74,6 @@ class TestValidateCheckpointExists:
         # Should NOT raise for vanilla_mcts
         validate_checkpoint_exists(mock_checkpoint_dir, 1, 'vanilla_mcts')
 
-    def test_alphazero_checkpoint_requires_model(self, mock_checkpoint_dir):
-        """alphazero checkpoint should require model.pt"""
-        from scripts.simulate_match import validate_checkpoint_exists
-
-        # Checkpoint has agent.yaml but NO model.pt
-        assert not (mock_checkpoint_dir / "model.pt").exists()
-
-        # Should raise for alphazero
-        with pytest.raises(ValueError, match="model.pt"):
-            validate_checkpoint_exists(mock_checkpoint_dir, 1, 'alphazero')
-
-    def test_alphazero_checkpoint_with_model_passes(self, mock_alphazero_checkpoint_dir):
-        """alphazero checkpoint with model.pt should pass"""
-        from scripts.simulate_match import validate_checkpoint_exists
-
-        # Should NOT raise
-        validate_checkpoint_exists(mock_alphazero_checkpoint_dir, 1, 'alphazero')
-
     def test_missing_agent_yaml_raises(self, tmp_path):
         """Checkpoint missing agent.yaml should raise for any type"""
         from scripts.simulate_match import validate_checkpoint_exists
@@ -150,22 +102,6 @@ class TestCreateAgent:
         game = Mock()
 
         result = create_agent('vanilla_mcts', checkpoint_dir, game)
-
-        mock_load.assert_called_once_with(checkpoint_dir)
-        assert result == mock_agent
-
-    @patch('scripts.simulate_match.load_agent_checkpoint')
-    def test_create_agent_alphazero_calls_load_checkpoint(self, mock_load, tmp_path):
-        """alphazero should use load_agent_checkpoint"""
-        from scripts.simulate_match import create_agent
-
-        mock_agent = Mock()
-        mock_load.return_value = mock_agent
-
-        checkpoint_dir = tmp_path / "checkpoint"
-        game = Mock()
-
-        result = create_agent('alphazero', checkpoint_dir, game)
 
         mock_load.assert_called_once_with(checkpoint_dir)
         assert result == mock_agent

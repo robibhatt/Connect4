@@ -22,24 +22,6 @@ import yaml
 # ===== Test Fixtures =====
 
 @pytest.fixture
-def alphazero_config_yaml():
-    """Sample AlphaZero YAML config"""
-    return {
-        'game': 'tictactoe',
-        'algorithm': {
-            'name': 'alphazero',
-            'model': {
-                'class': 'TicTacToeMLPNet',
-                'hidden': 64
-            },
-            'iterations': 10,
-            'num_sims': 50,
-            'device': 'cpu'
-        }
-    }
-
-
-@pytest.fixture
 def vanilla_mcts_config_yaml():
     """Sample Vanilla MCTS YAML config (no model section) with nested structure"""
     return {
@@ -73,16 +55,6 @@ def temp_config_file(tmp_path):
 class TestLoadConfig:
     """Tests for load_config function"""
 
-    def test_load_config_alphazero_returns_algo_name(self, alphazero_config_yaml, temp_config_file):
-        """load_config should return algo_name='alphazero' for alphazero config"""
-        from scripts.train import load_config
-
-        config_file = temp_config_file(alphazero_config_yaml)
-        game_name, algo_name, config, full_config = load_config(config_file)
-
-        assert algo_name == 'alphazero'
-        assert game_name == 'tictactoe'
-
     def test_load_config_vanilla_mcts_returns_algo_name(self, vanilla_mcts_config_yaml, temp_config_file):
         """load_config should return algo_name='vanilla_mcts' for vanilla_mcts config"""
         from scripts.train import load_config
@@ -92,17 +64,6 @@ class TestLoadConfig:
 
         assert algo_name == 'vanilla_mcts'
         assert game_name == 'tictactoe'
-
-    def test_load_config_alphazero_returns_correct_config_type(self, alphazero_config_yaml, temp_config_file):
-        """load_config should return AlphaZeroConfig for alphazero"""
-        from scripts.train import load_config
-        from src.algorithms.alphazero.config import AlphaZeroConfig
-
-        config_file = temp_config_file(alphazero_config_yaml)
-        game_name, algo_name, config, full_config = load_config(config_file)
-
-        assert isinstance(config, AlphaZeroConfig)
-        assert config.model_class == 'TicTacToeMLPNet'
 
     def test_load_config_vanilla_mcts_returns_correct_config_type(self, vanilla_mcts_config_yaml, temp_config_file):
         """load_config should return VanillaMCTSConfig for vanilla_mcts"""
@@ -136,17 +97,6 @@ class TestLoadConfig:
 class TestModelCreation:
     """Tests for conditional model creation in main()"""
 
-    def test_config_with_model_class_creates_model(self, alphazero_config_yaml, temp_config_file):
-        """Config with model_class should trigger model creation"""
-        from scripts.train import load_config
-
-        config_file = temp_config_file(alphazero_config_yaml)
-        game_name, algo_name, config, full_config = load_config(config_file)
-
-        # AlphaZero config should have model_class
-        assert hasattr(config, 'model_class')
-        assert config.model_class == 'TicTacToeMLPNet'
-
     def test_config_without_model_class_no_model(self, vanilla_mcts_config_yaml, temp_config_file):
         """Config without model_class should not require model creation"""
         from scripts.train import load_config
@@ -164,13 +114,6 @@ class TestModelCreation:
 class TestTrainerFactory:
     """Tests for trainer factory selection"""
 
-    def test_trainer_factory_uses_algo_name_alphazero(self):
-        """Trainer factory should be selected based on algo_name, not hardcoded"""
-        from src.algorithms.registry import AlgorithmRegistry
-
-        factory = AlgorithmRegistry.get_trainer_factory('alphazero')
-        assert callable(factory)
-
     def test_trainer_factory_uses_algo_name_vanilla_mcts(self):
         """Trainer factory should be available for vanilla_mcts"""
         from src.algorithms.registry import AlgorithmRegistry
@@ -183,24 +126,6 @@ class TestTrainerFactory:
 
 class TestAgentConfigFactory:
     """Tests for agent config factory via registry"""
-
-    def test_get_agent_config_factory_alphazero(self):
-        """Registry should provide agent config factory for alphazero"""
-        from src.algorithms.registry import AlgorithmRegistry
-        from src.algorithms.alphazero.config import AlphaZeroConfig
-        from src.algorithms.alphazero import AlphaZeroAgentConfig
-
-        factory = AlgorithmRegistry.get_agent_config_factory('alphazero')
-        assert callable(factory)
-
-        # Test that factory produces correct type
-        config = AlphaZeroConfig(
-            model_class='TicTacToeMLPNet',
-            model_kwargs={'hidden': 64},
-            num_sims=50
-        )
-        agent_config = factory(config)
-        assert isinstance(agent_config, AlphaZeroAgentConfig)
 
     def test_get_agent_config_factory_vanilla_mcts(self):
         """Registry should provide agent config factory for vanilla_mcts"""
