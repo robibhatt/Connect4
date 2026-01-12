@@ -310,21 +310,22 @@ def test_encode_matches_board_values(game):
 
 # ===== State Key Tests =====
 
-def test_key_returns_bytes(game, empty_state):
-    """key() should return bytes."""
+def test_key_returns_int64(game, empty_state):
+    """key() should return np.int64."""
     key = game.key(empty_state)
-    assert isinstance(key, bytes)
+    assert isinstance(key, np.int64), f"Expected np.int64, got {type(key)}"
 
 
 def test_key_consistent_for_same_state(game, empty_state):
-    """key() should return same bytes for same state."""
+    """key() should return same value for same state."""
     key1 = game.key(empty_state)
     key2 = game.key(empty_state)
     assert key1 == key2
+    assert isinstance(key1, np.int64)
 
 
 def test_key_different_for_different_states(game, empty_state):
-    """key() should return different bytes for different states."""
+    """key() should return different values for different states."""
     key1 = game.key(empty_state)
 
     # Create different state
@@ -332,6 +333,51 @@ def test_key_different_for_different_states(game, empty_state):
     key2 = game.key(new_state)
 
     assert key1 != key2
+
+
+def test_key_positive_value(game, empty_state):
+    """key() should return positive value."""
+    key = game.key(empty_state)
+    assert key >= 0, f"Key must be non-negative, got {key}"
+
+
+def test_key_fits_in_int64(game, empty_state):
+    """key() should fit in signed 64-bit integer range."""
+    key = game.key(empty_state)
+    assert key <= np.iinfo(np.int64).max, f"Key exceeds int64 max"
+
+
+def test_key_deterministic_across_calls(game):
+    """key() should be deterministic (no randomness between calls)."""
+    state = game.reset()
+    keys = [game.key(state) for _ in range(100)]
+    assert all(k == keys[0] for k in keys), "Keys must be identical for same state"
+
+
+def test_key_different_for_rotated_boards(game):
+    """key() should distinguish rotated boards (different game states)."""
+    state1 = game.next_state(game.reset(), 0)  # Top-left
+    state2 = game.next_state(game.reset(), 8)  # Bottom-right
+    assert game.key(state1) != game.key(state2), "Rotated boards must have different keys"
+
+
+def test_key_usable_as_dict_key(game, empty_state):
+    """key() should work as dictionary key for transposition tables."""
+    key = game.key(empty_state)
+    table = {key: "test_value"}
+    assert table[key] == "test_value"
+    assert key in table
+
+
+def test_key_storable_in_numpy_array(game):
+    """key() should be storable in np.int64 numpy array."""
+    states = [game.reset()]
+    for i in range(3):
+        states.append(game.next_state(states[-1], i))
+
+    keys = np.array([game.key(s) for s in states], dtype=np.int64)
+    assert keys.dtype == np.int64
+    assert len(keys) == 4
 
 
 # ===== Symmetries Tests =====

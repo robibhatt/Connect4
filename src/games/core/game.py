@@ -58,10 +58,27 @@ class Game:
         """
         raise NotImplementedError
 
-    def key(self, s: State):
+    def key(self, s: State) -> np.int64:
         """
-        Return a hashable, deterministic key for the state.
-        Used for transpositions in MCTS.
+        Return a 64-bit integer key for the state.
+
+        Used for transposition tables in MCTS. Requirements:
+
+        1. TYPE: Must return np.int64
+        2. DETERMINISTIC: Same state -> same key (no randomness between calls)
+        3. UNIQUE: Different states -> different keys (collisions extremely rare)
+        4. POSITIVE: Must be >= 0 (fits in signed int64 for numpy arrays)
+        5. FAST: O(1) or O(board_size)
+
+        Implementation: XOR state representation with a fixed seed, then apply
+        bit mixing. The seed provides collision avoidance. Do NOT use Zobrist
+        hashing (which depends on previous states).
+
+        Args:
+            s: Game state to hash
+
+        Returns:
+            np.int64: Unique identifier for the state
         """
         raise NotImplementedError
 

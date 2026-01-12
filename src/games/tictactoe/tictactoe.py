@@ -8,6 +8,9 @@ from jaxtyping import Bool, Float, Int
 
 from src.games.core.game import Game, State
 
+# Unique hash seed for TicTacToe (different from Connect4)
+_TICTACTOE_HASH_SEED = 0x1B873593
+
 
 @dataclass(frozen=True)
 class TicTacToeState(State):
@@ -92,9 +95,23 @@ class TicTacToe(Game):
         x = s.board.astype(np.float32, copy=False)
         return x
 
-    def key(self, s: TicTacToeState) -> bytes:
-        # Player-to-move is implicit; board alone is enough.
-        return s.board.tobytes()
+    def key(self, s: TicTacToeState) -> np.int64:
+        """
+        Return 64-bit integer key using base-3 encoding + XOR-mix.
+
+        Encodes the 3x3 board as a base-3 number, then applies bit mixing
+        with a seed for collision avoidance.
+        """
+        # Encode board as base-3 number: -1->0, 0->1, +1->2
+        encoded = 0
+        for val in s.board.flat:
+            encoded = encoded * 3 + (int(val) + 1)
+
+        combined = encoded ^ _TICTACTOE_HASH_SEED
+        combined ^= combined >> 17
+        combined ^= combined << 13
+        combined ^= combined >> 7
+        return np.int64(combined & 0x7FFFFFFFFFFFFFFF)
 
     def symmetries(
         self,

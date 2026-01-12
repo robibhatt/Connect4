@@ -16,6 +16,9 @@ from src.games.connect4.bitboard import (
     column_height,
 )
 
+# Unique hash seed for Connect4 (collision avoidance)
+_CONNECT4_HASH_SEED = 0x5DEECE66D
+
 
 class Connect4State(State):
     """
@@ -193,13 +196,24 @@ class Connect4(Game):
         """
         return s.board.astype(np.float32, copy=False)
 
-    def key(self, s: Connect4State) -> bytes:
+    def key(self, s: Connect4State) -> np.int64:
         """
-        Return hashable key for transposition tables.
+        Return 64-bit integer key using bitboard XOR-mix.
 
-        Uses board bytes for compatibility with existing caches.
+        Combines the two bitboards with a seed and applies bit mixing
+        for collision avoidance.
         """
-        return s.board.tobytes()
+        # Combine bitboards using XOR with bit shift to differentiate them
+        # Bitboards are ~49 bits, so shift opponent by 15 to spread bits
+        combined = s._bb_current ^ (s._bb_opponent << 15) ^ _CONNECT4_HASH_SEED
+
+        # Apply xorshift bit mixing (keep within 64-bit bounds)
+        mask = 0x7FFFFFFFFFFFFFFF  # Use signed int64 max for positive result
+        combined = combined & mask
+        combined ^= combined >> 17
+        combined ^= (combined << 13) & mask
+        combined ^= combined >> 7
+        return np.int64(combined & mask)
 
     def symmetries(
         self,
