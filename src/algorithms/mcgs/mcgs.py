@@ -46,6 +46,7 @@ class MCGSCoreConfig:
     max_rollout_depth: int | None = None
     rollout_seed: int | None = None
     illegal_action_penalty: float = 1e9
+    max_nodes: int | None = None       # Maximum number of nodes we store in our graph
 
 
 class MCGS:

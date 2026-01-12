@@ -23,6 +23,7 @@ algorithm:
   max_rollout_depth: 100       # Max depth for random rollouts (null = unlimited)
   rollout_seed: 42             # Seed for rollout randomness
   illegal_action_penalty: 1000000000.0
+  max_nodes: null                # Maximum number of nodes to store in graph (optional)
 
 # Notes:
 # ------
