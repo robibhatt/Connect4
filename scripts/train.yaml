@@ -1,33 +1,18 @@
-# Vanilla MCTS Training Configuration
-# ===================================
-# Demonstrates how to configure Vanilla MCTS (no neural networks)
-
+# MCGS Training Configuration
 game: connect4
 
 algorithm:
-  name: vanilla_mcts
+  name: mcgs
 
-  # Hardware device - kept for consistency but not used
-  device: cpu
+  core:
+    num_sims: 1000
+    c_exploration: 1.414
+    max_rollout_depth: 100
+    max_nodes: 100000
+    batch_size: 1
 
-  # NO MODEL SECTION - this is the key difference from AlphaZero!
-
-  # Validation settings
-  num_test_games: 20           # Number of test games to run for validation
-  random_seed: 42              # Random seed for reproducibility
-  verbose: true                # Print progress
-
-  # MCTS search parameters
-  num_sims: 1000               # Simulations per move (higher = stronger but slower)
-  c_exploration: 1.414         # UCB1 exploration constant (sqrt(2) is standard)
-  max_rollout_depth: 100       # Max depth for random rollouts (null = unlimited)
-  rollout_seed: 42             # Seed for rollout randomness
-  illegal_action_penalty: 1000000000.0
-
-# Notes:
-# ------
-# - No model section needed (pure algorithmic approach)
-# - Agent strength comes from num_sims (more simulations = stronger)
-# - c_exploration controls exploration/exploitation tradeoff
-# - Trained "agent" is just these hyperparameters (saved in agent.yaml)
-# - No model.pt file will be created
+  trainer:
+    num_test_games: 5
+    random_seed: 42
+    verbose: true
+    device: cpu

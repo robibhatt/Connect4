@@ -3,22 +3,19 @@
 import pytest
 import numpy as np
 
-from src.algorithms.mcgs.mcgs import MCGS, MCGSCoreConfig, Node
+from src.algorithms.mcgs.mcgs import MCGS, MCGSCoreConfig
+from src.algorithms.mcgs.table import Node
 
 
 class TestNode:
     """Tests for MCGS Node class."""
 
-    def test_node_creation(self, tictactoe_game):
-        """Node should initialize with state and action count."""
-        state = tictactoe_game.reset()
-        node = Node(state=state, num_actions=9)
-        assert node.state is state
-        assert len(node.children) == 9
-        assert node.is_expanded is False
-        assert node.N == 0
-        assert node.W == 0
-        assert node.Q == 0
+    def test_node_creation(self):
+        """Node should initialize with n, w, hash."""
+        node = Node(n=5, w=2.5, hash=12345)
+        assert node.n == 5
+        assert node.w == 2.5
+        assert node.hash == 12345
 
 
 class TestMCGSCoreConfig:
@@ -29,12 +26,14 @@ class TestMCGSCoreConfig:
         cfg = MCGSCoreConfig()
         assert cfg.num_sims == 1000
         assert cfg.c_exploration == pytest.approx(1.414, abs=0.001)
+        assert cfg.batch_size == 1
 
     def test_config_custom_values(self):
         """MCGSCoreConfig should accept custom values."""
-        cfg = MCGSCoreConfig(num_sims=50, c_exploration=2.0)
+        cfg = MCGSCoreConfig(num_sims=50, c_exploration=2.0, batch_size=32)
         assert cfg.num_sims == 50
         assert cfg.c_exploration == 2.0
+        assert cfg.batch_size == 32
 
 
 class TestMCGS:
@@ -94,18 +93,19 @@ class TestMCGS:
         assert action1 == action2
 
     def test_mcgs_clear(self, tictactoe_game):
-        """MCGS.clear() should reset the node cache."""
+        """MCGS.clear() should reset the table."""
         cfg = MCGSCoreConfig(num_sims=10)
         mcgs = MCGS(game=tictactoe_game, cfg=cfg)
         state = tictactoe_game.reset()
 
-        # Run to populate cache
+        # Run to populate table
         mcgs.run(root=state)
 
         # Clear
         mcgs.clear()
 
-        assert len(mcgs.nodes) == 0
+        # Table should be empty (no slots in use)
+        assert not mcgs.table.in_use.any()
 
     def test_mcgs_select_action_deterministic(self, tictactoe_game):
         """select_action with deterministic=True should return argmax."""

@@ -38,6 +38,7 @@ class TestMCGSAgentConfigComposition:
             max_rollout_depth=50,
             rollout_seed=42,
             illegal_action_penalty=1e6,
+            batch_size=8,
         )
         config = MCGSAgentConfig(mcgs=core)
 
@@ -46,6 +47,7 @@ class TestMCGSAgentConfigComposition:
         assert config.mcgs.max_rollout_depth == 50
         assert config.mcgs.rollout_seed == 42
         assert config.mcgs.illegal_action_penalty == 1e6
+        assert config.mcgs.batch_size == 8
 
 
 class TestMCGSAgentConfigSerialization:
@@ -72,6 +74,7 @@ class TestMCGSAgentConfigSerialization:
                 "max_rollout_depth": 100,
                 "rollout_seed": 99,
                 "illegal_action_penalty": 1e7,
+                "batch_size": 32,
             },
             "device": "cuda",
         }
@@ -82,6 +85,7 @@ class TestMCGSAgentConfigSerialization:
         assert config.mcgs.max_rollout_depth == 100
         assert config.mcgs.rollout_seed == 99
         assert config.mcgs.illegal_action_penalty == 1e7
+        assert config.mcgs.batch_size == 32
         assert config.device == "cuda"
 
     def test_roundtrip(self):

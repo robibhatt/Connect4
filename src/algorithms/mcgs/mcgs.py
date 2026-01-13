@@ -17,25 +17,10 @@ import numpy as np
 import math
 
 from src.games.core.game import Game, State
+from src.algorithms.mcgs.player import Player
+from src.algorithms.mcgs.table import Table, Node
+from src.algorithms.mcgs.evaluator import Evaluator
 
-
-class Node:
-
-    def __init__(
-        self,
-        state: State,
-        num_actions: int
-    ):
-
-        self.state = state
-        self.children = [None for action in range(num_actions)]
-        self.is_expanded = False
-        self.checked_actions = [False for action in range(num_actions)]
-
-        # stuff for UCT
-        self.N = 0
-        self.W = 0
-        self.Q = 0
 
 
 @dataclass
@@ -46,7 +31,8 @@ class MCGSCoreConfig:
     max_rollout_depth: int | None = None
     rollout_seed: int | None = None
     illegal_action_penalty: float = 1e9
-    max_nodes: int | None = None       # Maximum number of nodes we store in our graph
+    max_nodes: int | None = 100_000       # Maximum number of nodes we store in our graph
+    batch_size: int = 1                # Batch size for node evaluations (1 = no batching)
 
 
 class MCGS:
@@ -73,9 +59,18 @@ class MCGS:
         else:
             self.rng = np.random.default_rng()
 
-        # a dictionary of a small set of nodes that we keep referencing
-        # if we don't find a node in here, we basically start from scratch.
-        self.nodes = {}
+        # create the table, player, evaluator
+        self.table = Table(num_states=self.cfg.max_nodes)
+        self.evaluator = Evaluator(
+                            game=self.game, 
+                            max_depth=self.cfg.max_rollout_depth, 
+                            seed=self.rng.integers(1000)
+                        )
+        self.player = Player(
+                            table=self.table,
+                            game=self.game,
+                            c=self.cfg.c_exploration
+                        )
 
 
     # -------------------------
@@ -84,147 +79,78 @@ class MCGS:
 
     def run(self, root: State) -> np.ndarray:
 
-        # first, we check if we have a starting point
-        hash = self.game.key(s=root)
-        if hash in self.nodes:
-            root_node = self.nodes[hash]
-            self.clear()
-            self.nodes[hash] = root_node
+        # reset table for fresh search
+        self.clear()
 
-        else:
+        # get children states
+        legalities = self.game.legal_actions(s=root)
+        legal_actions = np.where(legalities)[0]
+        children_states = [self.game.next_state(root, a) for a in legal_actions]
 
-            # well all our savings are a moo point
-            self.clear()
-            root_node = Node(state=root, num_actions=self.game.action_size)
+        # do rollouts until we have enough
+        total_rollouts = 0
+        while total_rollouts < self.cfg.num_sims:
+            total_rollouts += self._add_rollouts(state=root)
 
+        # get N values from table for each child
+        counts = np.zeros(self.game.action_size, dtype=np.float32)
+        for action, child_state in zip(legal_actions, children_states):
+            key = self.game.key(child_state)
+            node = self.table.get_node(state_hash=key)
+            counts[action] = node.n
 
-        for sim in range(self.cfg.num_sims):
+        return counts
+    
 
-            # do all the work of getting the statistacs
-            self._rollout(node=root_node)
+    def _add_rollouts(
+        self,
+        state: State
+    ) -> int:
+        # generate rollouts from player
+        rollouts, valued_rollouts = self.player.generate_rollouts(
+            target_batch_size=self.cfg.batch_size,
+            state=state
+        )
 
-        # get them visit frequencies
-        counts = [child.N if child else 0. for child in root_node.children]
-        return np.array(counts)
+        # evaluate unvalued rollouts using last state
+        if rollouts:
+            last_states = [rollout[-1] for rollout in rollouts]
+            values = self.evaluator.evaluate(last_states)
+            for rollout, value in zip(rollouts, values):
+                valued_rollouts.append((rollout, value))
 
+        # back propagate all valued rollouts
+        self._back_prop(valued_rollouts)
 
-    def _select_child(self, node: Node) -> Node:
-        """
-        uses UCT to select the best child assuming the node has already
-        been expanded.
-        """
+        return len(valued_rollouts)
 
-        assert(node.is_expanded)
+    def _back_prop(
+        self,
+        valued_rollouts: list[tuple[list[State], float]]
+    ):
 
-        # returns child with best score
-        best_score = None
-        best_child = None
-        for child in node.children:
-            if child is not None:
-                child_score = - 1.0 * child.Q + self.cfg.c_exploration * math.sqrt(math.log(node.N) / child.N)
-                if best_score is None or child_score > best_score:
-                    best_score = child_score
-                    best_child = child
-        return best_child
+        ns = {}
+        ws = {}
 
-    def _random_play(self, state: State) -> float:
+        for (rollout, value) in valued_rollouts:
+            sign = 1.0
+            for state in reversed(rollout):
+                key = self.game.key(state)
+                if key not in ns:
+                    node = self.table.get_node(state_hash=key)
+                    ns[key] = node.n
+                    ws[key] = node.w
+                ns[key] += 1
+                ws[key] += value * sign
+                sign *= -1.
 
-        current_state = state
-        sign = 1.0
-        counter = 0
-        while self.cfg.max_rollout_depth is None or counter < self.cfg.max_rollout_depth:
-            counter += 1
-            done, v = self.game.terminal_value(s=current_state)
-            if done:
-                return sign * v
-            else:
-
-                # flip the sign
-                sign *= -1.0
-
-                # get a random legal action
-                legal_actions = self.game.legal_actions(s=current_state)
-                legal_indices = np.flatnonzero(legal_actions)
-                action = self.rng.choice(legal_indices)
-
-                # get the next state
-                current_state = self.game.next_state(s=current_state, a=action)
-
-        return 0.0
-
-
-    def _rollout(self, node: Node) -> None:
-
-        visited_nodes = []
-        current_node = node
-        final_reward = None
-
-        while final_reward is None:
-
-            current_node.N += 1
-
-            # check if it is terminal
-            (done, value) = self.game.terminal_value(current_node.state)
-            if done:
-                current_node.W += value
-                current_node.Q = current_node.W / current_node.N
-                final_reward = -1.0 * value
-                break
-
-            visited_nodes.append(current_node)
-
-            if not current_node.is_expanded:
-
-                # pick a brand new action
-                new_action = None
-                legal_actions = self.game.legal_actions(s=current_node.state)
-                for action in range(self.game.action_size):
-                    if not current_node.checked_actions[action]:
-                        if not legal_actions[action]:
-                            current_node.checked_actions[action] = True
-                        else:
-                            new_action = action
-
-                # check if it is illegal
-                assert(legal_actions[new_action])
-
-                # get the next state
-                next_state = self.game.next_state(s=current_node.state, a=new_action)
-
-                # create a new node
-                new_node = Node(state=next_state, num_actions=self.game.action_size)
-
-                # set it as a child of the current_node
-                current_node.children[new_action] = new_node
-
-                # update current_nodes status
-                current_node.checked_actions[new_action] = True
-                if sum(current_node.checked_actions) == len(current_node.checked_actions):
-                    current_node.is_expanded = True
-
-                # random play
-                reward = self._random_play(state=next_state)
-                new_node.N += 1
-                new_node.W += reward
-                new_node.Q = new_node.W / new_node.N
-                final_reward = -1.0 * reward
-
-            else:
-
-                # get the best child
-                current_node = self._select_child(node=current_node)
-
-        # now update all the nodes
-        for path_node in reversed(visited_nodes):
-            path_node.W += final_reward
-            path_node.Q = path_node.W / path_node.N
-            final_reward *= -1
-
-        # update dictionary
-        for path_node in visited_nodes[:3]:
-            hash = self.game.key(path_node.state)
-            if hash not in self.nodes:
-                self.nodes[hash] = path_node
+        for key in ns:
+            node = Node(
+                n = ns[key],
+                w = ws[key],
+                hash = key
+            )
+            self.table.add_state(node)
 
 
     def select_action(self, pi: np.ndarray, deterministic: bool = False) -> int:
@@ -243,7 +169,6 @@ class MCGS:
         return self.select_action(pi, deterministic=deterministic)
 
     def clear(self) -> None:
-
-        self.nodes = {}
+        self.table.clear()
 
 

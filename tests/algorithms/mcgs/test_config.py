@@ -28,6 +28,7 @@ class TestMCGSConfig:
         assert hasattr(config.core, 'max_rollout_depth')
         assert hasattr(config.core, 'rollout_seed')
         assert hasattr(config.core, 'illegal_action_penalty')
+        assert hasattr(config.core, 'batch_size')
 
     def test_mcgs_config_access_trainer_directly(self):
         """Should access TrainerArgs directly via .trainer."""
@@ -51,13 +52,15 @@ class TestMCGSConfig:
             core=MCGSCoreConfig(
                 num_sims=500,
                 c_exploration=2.0,
-                max_rollout_depth=50
+                max_rollout_depth=50,
+                batch_size=16
             )
         )
         assert isinstance(config.core, MCGSCoreConfig)
         assert config.core.num_sims == 500
         assert config.core.c_exploration == 2.0
         assert config.core.max_rollout_depth == 50
+        assert config.core.batch_size == 16
 
 
 class TestTrainerArgs:
@@ -83,3 +86,4 @@ class TestMCGSCoreConfig:
         assert cfg.max_rollout_depth is None
         assert cfg.rollout_seed is None
         assert cfg.illegal_action_penalty == 1e9
+        assert cfg.batch_size == 1

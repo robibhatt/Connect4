@@ -48,13 +48,14 @@ class TestMCGSAgent:
         agent = MCGSAgent(game=tictactoe_game, mcgs=mcgs)
         state = tictactoe_game.reset()
 
-        # Play to populate cache
+        # Play to populate table
         agent.act(state)
 
         # Start new game
         agent.start()
 
-        assert len(mcgs.nodes) == 0
+        # Table should be empty (no slots in use)
+        assert not mcgs.table.in_use.any()
 
     def test_mcgs_agent_to_checkpoint(self, tictactoe_game, tmp_path):
         """to_checkpoint should not create model.pt (no model needed)."""

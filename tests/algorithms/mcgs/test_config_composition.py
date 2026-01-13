@@ -31,6 +31,7 @@ class TestMCGSConfigComposition:
         assert config.core.max_rollout_depth is None
         assert config.core.rollout_seed is None
         assert config.core.illegal_action_penalty == 1e9
+        assert config.core.batch_size == 1
 
     def test_nested_field_access_trainer(self):
         """Can access trainer args fields via nested path."""
@@ -80,6 +81,7 @@ class TestMCGSConfigSerialization:
                 "max_rollout_depth": 50,
                 "rollout_seed": 42,
                 "illegal_action_penalty": 1e6,
+                "batch_size": 64,
             },
             "trainer": {
                 "num_test_games": 5,
@@ -95,6 +97,7 @@ class TestMCGSConfigSerialization:
         assert config.core.max_rollout_depth == 50
         assert config.core.rollout_seed == 42
         assert config.core.illegal_action_penalty == 1e6
+        assert config.core.batch_size == 64
         assert config.trainer.num_test_games == 5
         assert config.trainer.device == "cuda"
         assert config.trainer.random_seed == 123
@@ -128,4 +131,5 @@ class TestMCGSConfigSerialization:
 
         # Defaults for unspecified values
         assert config.core.c_exploration == 1.414
+        assert config.core.batch_size == 1
         assert config.trainer.num_test_games == 10
