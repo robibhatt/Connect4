@@ -16,19 +16,15 @@ game: connect4
 
 # First agent configuration
 agent1:
-  type: random  # 'random' or 'alphazero'
-  name: "Random Agent 1"  # Optional: Display name (defaults to type)
-
-  # Required for alphazero agents:
-  # checkpoint_dir: saved_agents/YOUR_CHECKPOINT_DIR
+  type: alphazero
+  name: "MCGS Bob"
+  checkpoint_dir: saved_agents/mcgs_bob
 
 # Second agent configuration
 agent2:
-  type: random  # 'random' or 'alphazero'
-  name: "Random Agent 2"  # Optional: Display name (defaults to type)
-
-  # Required for alphazero agents:
-  # checkpoint_dir: saved_agents/YOUR_CHECKPOINT_DIR
+  type: alphazero
+  name: "MCTS Bob"
+  checkpoint_dir: saved_agents/mcts_bob
 
 # UI configuration (optional)
 ui:

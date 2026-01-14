@@ -152,6 +152,13 @@ class AgentRegistry:
                     cls._registry['VanillaMCTSAgent'] = VanillaMCTSAgent
             except (ImportError, ValueError):
                 pass
+        elif agent_class_name == 'MCGSAgent':
+            try:
+                from src.algorithms.mcgs.agent import MCGSAgent
+                if 'MCGSAgent' not in cls._registry:
+                    cls._registry['MCGSAgent'] = MCGSAgent
+            except (ImportError, ValueError):
+                pass
 
     @classmethod
     def list_agents(cls) -> list[str]:
@@ -172,6 +179,14 @@ def _auto_register():
         from src.algorithms.vanilla_mcts import VanillaMCTSAgent
         if 'VanillaMCTSAgent' not in AgentRegistry._registry:
             AgentRegistry._registry['VanillaMCTSAgent'] = VanillaMCTSAgent
+    except ImportError:
+        pass
+
+    # Register MCGSAgent
+    try:
+        from src.algorithms.mcgs.agent import MCGSAgent
+        if 'MCGSAgent' not in AgentRegistry._registry:
+            AgentRegistry._registry['MCGSAgent'] = MCGSAgent
     except ImportError:
         pass
 

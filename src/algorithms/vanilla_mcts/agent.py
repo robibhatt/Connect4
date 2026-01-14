@@ -92,9 +92,8 @@ class VanillaMCTSAgent(Agent, CheckpointableAgent):
         with (checkpoint_dir / "agent.yaml").open('r') as f:
             agent_yaml = yaml.safe_load(f)
 
-        # Extract MCTS configuration (nested structure from composed config)
-        agent_config_dict = agent_yaml['mcts']
-        mcts_core_dict = agent_config_dict['mcts']
+        # Extract MCTS configuration
+        mcts_core_dict = agent_yaml['mcts']
 
         # Create MCTS config
         mcts_cfg = MCTSConfig(**mcts_core_dict)

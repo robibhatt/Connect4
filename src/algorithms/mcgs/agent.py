@@ -92,9 +92,8 @@ class MCGSAgent(Agent, CheckpointableAgent):
         with (checkpoint_dir / "agent.yaml").open('r') as f:
             agent_yaml = yaml.safe_load(f)
 
-        # Extract MCGS configuration (nested structure from composed config)
-        agent_config_dict = agent_yaml['mcgs']
-        mcgs_core_dict = agent_config_dict['mcgs']
+        # Extract MCGS configuration
+        mcgs_core_dict = agent_yaml['mcgs']
 
         # Create MCGS config
         mcgs_cfg = MCGSCoreConfig(**mcgs_core_dict)

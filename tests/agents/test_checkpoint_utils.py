@@ -131,3 +131,39 @@ class TestSaveAgentCheckpoint:
         )
 
         assert save_dir.name == "my_agent"
+
+    def test_to_dict_used_for_config_serialization(
+        self, mock_checkpointable_agent, temp_root_dir
+    ):
+        """Config with to_dict() should serialize algorithm config correctly."""
+        import yaml
+        from src.agents.checkpoint_utils import save_agent_checkpoint
+
+        # Create config with to_dict() returning nested structure
+        # Use spec to restrict which attributes exist
+        config = Mock(spec=['device', 'to_dict'])
+        config.device = 'cpu'
+        config.to_dict = Mock(return_value={
+            'mcgs': {'num_sims': 500, 'c_exploration': 1.5},
+            'device': 'cpu'
+        })
+
+        save_dir = save_agent_checkpoint(
+            agent=mock_checkpointable_agent,
+            agent_class_name="MCGSAgent",
+            game_name="tictactoe",
+            config=config,
+            root_dir=str(temp_root_dir),
+            custom_folder_name="test_to_dict"
+        )
+
+        # Verify to_dict was called
+        config.to_dict.assert_called_once()
+
+        # Verify saved YAML has correct structure
+        with (save_dir / "agent.yaml").open() as f:
+            saved = yaml.safe_load(f)
+
+        assert 'mcgs' in saved
+        assert saved['mcgs']['num_sims'] == 500
+        assert saved['mcgs']['c_exploration'] == 1.5

@@ -1,0 +1,12 @@
+game: connect4
+algorithm:
+  name: vanilla_mcts
+  num_test_games: 10
+  num_sims: 1000
+  c_exploration: 1.414
+  max_rollout_depth: null
+  random_seed: 42
+  verbose: true
+
+checkpoint:
+  custom_folder_name: "mcts_bob"

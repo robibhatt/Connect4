@@ -153,3 +153,10 @@ def test_vanilla_mcts_agent_registered():
     agent_cls = AgentRegistry.get_agent('VanillaMCTSAgent')
     assert agent_cls is not None
     assert agent_cls.__name__ == 'VanillaMCTSAgent'
+
+
+def test_mcgs_agent_registered():
+    """MCGSAgent should be registered."""
+    agent_cls = AgentRegistry.get_agent('MCGSAgent')
+    assert agent_cls is not None
+    assert agent_cls.__name__ == 'MCGSAgent'

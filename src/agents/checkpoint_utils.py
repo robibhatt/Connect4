@@ -97,22 +97,27 @@ def save_agent_checkpoint(
             'kwargs': config.model_kwargs
         }
 
-    # Build MCTS section
-    mcts_config = {}
-    # Common fields
-    if hasattr(config, 'num_sims'):
-        mcts_config['num_sims'] = config.num_sims
-    if hasattr(config, 'illegal_action_penalty'):
-        mcts_config['illegal_action_penalty'] = config.illegal_action_penalty
-    # Vanilla MCTS fields
-    if hasattr(config, 'c_exploration'):
-        mcts_config['c_exploration'] = config.c_exploration
-    if hasattr(config, 'max_rollout_depth'):
-        mcts_config['max_rollout_depth'] = config.max_rollout_depth
-    if hasattr(config, 'rollout_seed'):
-        mcts_config['rollout_seed'] = config.rollout_seed
-
-    agent_yaml['mcts'] = mcts_config
+    # Serialize algorithm config using to_dict() if available
+    if hasattr(config, 'to_dict'):
+        config_dict = config.to_dict()
+        # Merge config dict into agent_yaml (excludes 'device' since already set)
+        for key, value in config_dict.items():
+            if key != 'device':
+                agent_yaml[key] = value
+    else:
+        # Fallback for legacy flat configs
+        mcts_config = {}
+        if hasattr(config, 'num_sims'):
+            mcts_config['num_sims'] = config.num_sims
+        if hasattr(config, 'illegal_action_penalty'):
+            mcts_config['illegal_action_penalty'] = config.illegal_action_penalty
+        if hasattr(config, 'c_exploration'):
+            mcts_config['c_exploration'] = config.c_exploration
+        if hasattr(config, 'max_rollout_depth'):
+            mcts_config['max_rollout_depth'] = config.max_rollout_depth
+        if hasattr(config, 'rollout_seed'):
+            mcts_config['rollout_seed'] = config.rollout_seed
+        agent_yaml['mcts'] = mcts_config
 
     if training_config:
         agent_yaml['training'] = training_config
