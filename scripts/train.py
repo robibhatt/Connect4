@@ -115,6 +115,10 @@ def main():
     agent_config_factory = AlgorithmRegistry.get_agent_config_factory(algo_name)
     agent_config = agent_config_factory(config)
 
+    # Extract checkpoint config (optional custom folder name)
+    checkpoint_config = full_config.get('checkpoint', {})
+    custom_folder_name = checkpoint_config.get('custom_folder_name')
+
     # Save agent checkpoint
     agent_class_name = agent.__class__.__name__
     save_dir = save_agent_checkpoint(
@@ -123,7 +127,8 @@ def main():
         game_name=game_name,
         config=agent_config,
         training_config=full_config,
-        root_dir="saved_agents"
+        root_dir="saved_agents",
+        custom_folder_name=custom_folder_name
     )
 
     print(f"\nAgent saved to: {save_dir}")

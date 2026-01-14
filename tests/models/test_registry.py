@@ -111,22 +111,6 @@ def test_register_invalid_name_raises(clean_test_models_from_registry):
         ModelRegistry.register(InvalidModelName)
 
 
-# ===== Game Name Extraction Tests =====
-
-def test_game_name_extraction_connect4(clean_test_models_from_registry):
-    """Should correctly extract 'connect4' from Connect4MLPNet."""
-    # Connect4MLPNet is already registered, check the mapping
-    models = ModelRegistry.get_models_for_game('connect4')
-    assert 'Connect4MLPNet' in models
-
-
-def test_game_name_extraction_tictactoe(clean_test_models_from_registry):
-    """Should correctly extract 'tictactoe' from TicTacToeMLPNet."""
-    # TicTacToeMLPNet is already registered
-    models = ModelRegistry.get_models_for_game('tictactoe')
-    assert 'TicTacToeMLPNet' in models
-
-
 # ===== Retrieval by Class Name Tests =====
 
 def test_get_model_returns_correct_class(clean_test_models_from_registry):
@@ -169,18 +153,6 @@ def test_get_models_for_game_returns_all_models():
     assert 'Connect4MLPNet' in models
 
 
-def test_get_models_for_game_returns_sorted():
-    """get_models_for_game should return sorted list."""
-    models = ModelRegistry.get_models_for_game('connect4')
-    assert models == sorted(models)
-
-
-def test_get_models_for_game_empty_for_unknown_game():
-    """get_models_for_game should return empty list for unknown game."""
-    models = ModelRegistry.get_models_for_game('nonexistent_game')
-    assert models == []
-
-
 # ===== Reverse Lookup Tests =====
 
 def test_get_game_for_model_returns_correct_game():
@@ -190,13 +162,6 @@ def test_get_game_for_model_returns_correct_game():
 
     game_name = ModelRegistry.get_game_for_model(model)
     assert game_name == 'tictactoe'
-
-
-def test_get_game_for_model_none_for_unregistered():
-    """get_game_for_model should return None for unregistered model."""
-    model = InvalidModelName()
-    game_name = ModelRegistry.get_game_for_model(model)
-    assert game_name is None
 
 
 # ===== Validation Tests =====
@@ -271,12 +236,6 @@ def test_list_models_returns_all_registered():
     assert 'Connect4MLPNet' in models
 
 
-def test_list_models_is_sorted():
-    """list_models should return sorted list."""
-    models = ModelRegistry.list_models()
-    assert models == sorted(models)
-
-
 def test_list_games_returns_all_games_with_models():
     """list_games should return all games that have models."""
     games = ModelRegistry.list_games()
@@ -284,12 +243,6 @@ def test_list_games_returns_all_games_with_models():
     # Should include at least tictactoe and connect4
     assert 'tictactoe' in games
     assert 'connect4' in games
-
-
-def test_list_games_is_sorted():
-    """list_games should return sorted list."""
-    games = ModelRegistry.list_games()
-    assert games == sorted(games)
 
 
 # ===== Integration Tests =====

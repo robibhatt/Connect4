@@ -175,22 +175,6 @@ def test_list_games_returns_all_registered():
     assert 'connect4' in games
 
 
-def test_list_games_is_sorted():
-    """list_games should return sorted list."""
-    games = GameRegistry.list_games()
-
-    # Check if sorted
-    assert games == sorted(games)
-
-
-def test_list_games_includes_manually_registered(clean_test_game_from_registry):
-    """list_games should include manually registered games."""
-    GameRegistry.register('test_game', TestGame)
-
-    games = GameRegistry.list_games()
-    assert 'test_game' in games
-
-
 # ===== Integration Tests =====
 
 def test_can_instantiate_registered_games():

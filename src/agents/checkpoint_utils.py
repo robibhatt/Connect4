@@ -26,12 +26,14 @@ def save_agent_checkpoint(
     game_name: str,
     config: VanillaMCTSAgentConfig,
     training_config: Optional[Dict] = None,
-    root_dir: str = "saved_agents"
+    root_dir: str = "saved_agents",
+    custom_folder_name: Optional[str] = None
 ) -> Path:
     """
     Save agent checkpoint with metadata.
 
-    Creates directory: {root_dir}/{timestamp}_{game}_{AgentClass}/
+    Creates directory: {root_dir}/{custom_folder_name} if provided,
+    otherwise {root_dir}/{timestamp}_{game}_{AgentClass}/
     Saves files:
         - model.pt: Model weights (via agent.to_checkpoint())
         - agent.yaml: Complete agent configuration
@@ -43,13 +45,38 @@ def save_agent_checkpoint(
         config: Agent configuration
         training_config: Optional training metadata
         root_dir: Root directory for saved agents
+        custom_folder_name: Optional custom name for the checkpoint folder.
+            If None or empty, uses auto-generated timestamped name.
 
     Returns:
         Path to saved agent directory
+
+    Raises:
+        FileExistsError: If custom_folder_name is provided and directory exists
+        ValueError: If custom_folder_name contains path separators
     """
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    folder_name = f"{timestamp}_{game_name}_{agent_class_name}"
+    # Determine folder name
+    if custom_folder_name and custom_folder_name.strip():
+        folder_name = custom_folder_name.strip()
+        # Validate: no path separators allowed
+        if '/' in folder_name or '\\' in folder_name:
+            raise ValueError(
+                f"custom_folder_name cannot contain path separator: '{folder_name}'"
+            )
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    else:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        folder_name = f"{timestamp}_{game_name}_{agent_class_name}"
+
     save_dir = Path(root_dir) / folder_name
+
+    # Check for existing directory with helpful error message
+    if save_dir.exists():
+        raise FileExistsError(
+            f"Checkpoint directory already exists: '{save_dir}'. "
+            "Choose a different custom_folder_name or remove existing directory."
+        )
+
     save_dir.mkdir(parents=True, exist_ok=False)
 
     # Delegate to agent's checkpoint method (saves model.pt)

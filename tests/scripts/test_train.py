@@ -148,3 +148,44 @@ class TestAgentConfigFactory:
 
         with pytest.raises(KeyError):
             AlgorithmRegistry.get_agent_config_factory('nonexistent_algo')
+
+
+# ===== Custom Folder Name Config Tests =====
+
+class TestCustomFolderNameConfig:
+    """Tests for custom folder name in YAML config."""
+
+    def test_load_config_with_custom_folder_name(self, temp_config_file):
+        """load_config should preserve checkpoint section in full_config."""
+        from scripts.train import load_config
+
+        config_dict = {
+            'game': 'tictactoe',
+            'algorithm': {
+                'name': 'vanilla_mcts',
+                'core': {'num_sims': 100},
+                'trainer': {'num_test_games': 1}
+            },
+            'checkpoint': {
+                'custom_folder_name': 'my_custom_agent'
+            }
+        }
+
+        config_file = temp_config_file(config_dict)
+        game_name, algo_name, config, full_config = load_config(config_file)
+
+        # full_config should contain checkpoint section
+        assert 'checkpoint' in full_config
+        assert full_config['checkpoint']['custom_folder_name'] == 'my_custom_agent'
+
+    def test_load_config_without_custom_folder_name(self, vanilla_mcts_config_yaml, temp_config_file):
+        """load_config should work without checkpoint section (backward compatible)."""
+        from scripts.train import load_config
+
+        config_file = temp_config_file(vanilla_mcts_config_yaml)
+        game_name, algo_name, config, full_config = load_config(config_file)
+
+        # Should not have checkpoint section
+        checkpoint_config = full_config.get('checkpoint', {})
+        custom_name = checkpoint_config.get('custom_folder_name')
+        assert custom_name is None

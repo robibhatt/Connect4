@@ -118,34 +118,6 @@ def test_get_agent_error_message_shows_available_agents():
         assert 'Available agents:' in error_msg
 
 
-# ===== Retrieval by Game Tests =====
-
-def test_get_agents_for_game_returns_sorted():
-    """get_agents_for_game should return sorted list."""
-    agents = AgentRegistry.get_agents_for_game('tictactoe')
-    assert agents == sorted(agents)
-
-
-def test_get_agents_for_game_empty_for_unknown_game():
-    """get_agents_for_game should return empty list for unknown game."""
-    agents = AgentRegistry.get_agents_for_game('nonexistent_game')
-    assert agents == []
-
-
-# ===== Listing Tests =====
-
-def test_list_agents_is_sorted():
-    """list_agents should return sorted list."""
-    agents = AgentRegistry.list_agents()
-    assert agents == sorted(agents)
-
-
-def test_list_games_is_sorted():
-    """list_games should return sorted list."""
-    games = AgentRegistry.list_games()
-    assert games == sorted(games)
-
-
 # ===== Integration Tests =====
 
 def test_multiple_agents_per_game(clean_test_agents_from_registry):

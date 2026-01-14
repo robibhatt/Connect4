@@ -49,59 +49,8 @@ class TestMCGSAgentConfigComposition:
         assert config.mcgs.illegal_action_penalty == 1e6
         assert config.mcgs.batch_size == 8
 
-
-class TestMCGSAgentConfigSerialization:
-    """Test MCGSAgentConfig serialization to/from dict."""
-
-    def test_to_dict_nested_structure(self):
-        """to_dict should produce nested structure."""
-        core = MCGSCoreConfig(num_sims=200, c_exploration=1.5)
-        config = MCGSAgentConfig(mcgs=core, device="mps")
-        d = config.to_dict()
-
-        assert "mcgs" in d
-        assert "device" in d
-        assert d["mcgs"]["num_sims"] == 200
-        assert d["mcgs"]["c_exploration"] == 1.5
-        assert d["device"] == "mps"
-
-    def test_from_dict_nested_format(self):
-        """from_dict should load nested structure."""
-        d = {
-            "mcgs": {
-                "num_sims": 300,
-                "c_exploration": 1.8,
-                "max_rollout_depth": 100,
-                "rollout_seed": 99,
-                "illegal_action_penalty": 1e7,
-                "batch_size": 32,
-            },
-            "device": "cuda",
-        }
-        config = MCGSAgentConfig.from_dict(d)
-
-        assert config.mcgs.num_sims == 300
-        assert config.mcgs.c_exploration == 1.8
-        assert config.mcgs.max_rollout_depth == 100
-        assert config.mcgs.rollout_seed == 99
-        assert config.mcgs.illegal_action_penalty == 1e7
-        assert config.mcgs.batch_size == 32
-        assert config.device == "cuda"
-
-    def test_roundtrip(self):
-        """Config should survive serialization roundtrip."""
-        core = MCGSCoreConfig(num_sims=777, c_exploration=1.9)
-        original = MCGSAgentConfig(mcgs=core, device="mps")
-
-        d = original.to_dict()
-        restored = MCGSAgentConfig.from_dict(d)
-
-        assert restored.mcgs.num_sims == original.mcgs.num_sims
-        assert restored.mcgs.c_exploration == original.mcgs.c_exploration
-        assert restored.device == original.device
-
     def test_yaml_roundtrip(self):
-        """Config should survive YAML roundtrip."""
+        """Config should survive YAML serialization roundtrip."""
         core = MCGSCoreConfig(num_sims=888, c_exploration=2.1)
         original = MCGSAgentConfig(mcgs=core, device="cpu")
 

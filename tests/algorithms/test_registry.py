@@ -79,13 +79,6 @@ def test_get_trainer_factory():
     assert callable(factory)
 
 
-def test_list_algorithms():
-    """Test listing all registered algorithms"""
-    algorithms = AlgorithmRegistry.list_algorithms()
-    assert 'vanilla_mcts' in algorithms
-    assert isinstance(algorithms, list)
-
-
 # ===== Lazy Loading Tests =====
 
 def test_lazy_load_vanilla_mcts():

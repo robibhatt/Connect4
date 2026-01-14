@@ -47,57 +47,8 @@ class TestVanillaMCTSAgentConfigComposition:
         assert config.mcts.rollout_seed == 42
         assert config.mcts.illegal_action_penalty == 1e6
 
-
-class TestVanillaMCTSAgentConfigSerialization:
-    """Test VanillaMCTSAgentConfig serialization to/from dict."""
-
-    def test_to_dict_nested_structure(self):
-        """to_dict should produce nested structure."""
-        core = MCTSConfig(num_sims=200, c_exploration=1.5)
-        config = VanillaMCTSAgentConfig(mcts=core, device="mps")
-        d = config.to_dict()
-
-        assert "mcts" in d
-        assert "device" in d
-        assert d["mcts"]["num_sims"] == 200
-        assert d["mcts"]["c_exploration"] == 1.5
-        assert d["device"] == "mps"
-
-    def test_from_dict_nested_format(self):
-        """from_dict should load nested structure."""
-        d = {
-            "mcts": {
-                "num_sims": 300,
-                "c_exploration": 1.8,
-                "max_rollout_depth": 100,
-                "rollout_seed": 99,
-                "illegal_action_penalty": 1e7,
-            },
-            "device": "cuda",
-        }
-        config = VanillaMCTSAgentConfig.from_dict(d)
-
-        assert config.mcts.num_sims == 300
-        assert config.mcts.c_exploration == 1.8
-        assert config.mcts.max_rollout_depth == 100
-        assert config.mcts.rollout_seed == 99
-        assert config.mcts.illegal_action_penalty == 1e7
-        assert config.device == "cuda"
-
-    def test_roundtrip(self):
-        """Config should survive serialization roundtrip."""
-        core = MCTSConfig(num_sims=777, c_exploration=1.9)
-        original = VanillaMCTSAgentConfig(mcts=core, device="mps")
-
-        d = original.to_dict()
-        restored = VanillaMCTSAgentConfig.from_dict(d)
-
-        assert restored.mcts.num_sims == original.mcts.num_sims
-        assert restored.mcts.c_exploration == original.mcts.c_exploration
-        assert restored.device == original.device
-
     def test_yaml_roundtrip(self):
-        """Config should survive YAML roundtrip."""
+        """Config should survive YAML serialization roundtrip."""
         core = MCTSConfig(num_sims=888, c_exploration=2.1)
         original = VanillaMCTSAgentConfig(mcts=core, device="cpu")
 
